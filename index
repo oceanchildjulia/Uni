@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 AI Study Hub – M.Sc. Artificial Intelligence</title>
+<style>
+:root{
+  --bg:#0f1220;--panel:#171b30;--panel2:#1e2340;--border:#2a3052;
+  --text:#e9ecf8;--muted:#9aa3c9;--accent:#7c5cff;--accent2:#22d3ee;
+  --ok:#34d399;--warn:#fbbf24;--bad:#f87171;--radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+header{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;padding:.8rem 1.2rem;background:rgba(23,27,48,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--border)}
+h1{font-size:1.15rem;margin:0}
+h1 .hint{font-weight:400}
+nav{display:flex;gap:.4rem;flex-wrap:wrap;margin-left:auto}
+nav button{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.45rem .9rem;border-radius:999px;cursor:pointer;font-size:.9rem;transition:.15s}
+nav button:hover{color:var(--text);border-color:var(--accent)}
+nav button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+main{max-width:1000px;margin:0 auto;padding:1.2rem}
+section{display:none}
+section.active{display:block}
+h2{margin:.2rem 0 1rem;font-size:1.35rem}
+h2 .hint{font-size:.85rem;font-weight:400}
+.hint{color:var(--muted);font-size:.85rem}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.grid{display:grid;gap:1rem}
+.stats{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.stat .num{font-size:1.6rem;font-weight:700}
+.stat .lbl{color:var(--muted);font-size:.85rem}
+.bar{height:12px;background:var(--panel2);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.bar>div{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+.tip{border-left:4px solid var(--accent2);background:rgba(34,211,238,.07);padding:.8rem 1rem;border-radius:8px;font-size:.93rem;margin-top:1rem}
+.sem-title{margin:1.4rem 0 .5rem;color:var(--accent2);font-size:.85rem;text-transform:uppercase;letter-spacing:1.5px}
+.mod{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem}
+.mod .name{font-weight:600;cursor:pointer}
+.mod .name:hover{color:var(--accent2)}
+.mod .code{color:var(--muted);font-size:.76rem;font-family:ui-monospace,monospace;background:var(--panel2);padding:.1rem .45rem;border-radius:6px}
+.pill{margin-left:auto;border-radius:999px;padding:.32rem .85rem;font-size:.8rem;font-weight:600;cursor:pointer;transition:.15s}
+.pill.open{background:transparent;border:1px dashed var(--muted);color:var(--muted)}
+.pill.inprogress{background:rgba(251,191,36,.12);border:1px solid var(--warn);color:var(--warn)}
+.pill.passed{background:rgba(52,211,153,.12);border:1px solid var(--ok);color:var(--ok)}
+.del{background:none;border:none;color:var(--bad);cursor:pointer;font-size:1rem;opacity:.55;padding:.2rem}
+.del:hover{opacity:1}
+.num-chip{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0}
+form.inline{display:flex;flex-wrap:wrap;gap:.5rem}
+input,select,textarea{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.5rem .7rem;font:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent)}
+button.primary{background:var(--accent);border:none;color:#fff;padding:.5rem .95rem;border-radius:8px;cursor:pointer;font-weight:600}
+button.primary:hover{filter:brightness(1.12)}
+.fc-wrap{perspective:1000px;max-width:580px;margin:0 auto}
+.fc{position:relative;height:250px;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.fc.flipped{transform:rotateY(180deg)}
+.fc .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.4rem;text-align:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel);overflow:auto}
+.fc .face.back{transform:rotateY(180deg);background:linear-gradient(160deg,var(--panel),#252c55)}
+.fc .lang{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:.7rem}
+.fc .content{font-size:1.12rem}
+.fc-btns{display:flex;gap:.8rem;justify-content:center;align-items:center;margin-top:1.1rem}
+.btn-know,.btn-again{padding:.55rem 1.3rem;border-radius:999px;cursor:pointer;font-weight:600;font-size:.95rem}
+.btn-know{background:rgba(52,211,153,.12);border:1px solid var(--ok);color:var(--ok)}
+.btn-again{background:rgba(248,113,113,.12);border:1px solid var(--bad);color:var(--bad)}
+.btn-know:disabled,.btn-again:disabled{opacity:.35;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧠 AI Study Hub <span class="hint">· M.Sc. Artificial Intelligence</span></h1>
+  <nav>
+    <button data-tab="dashboard" class="active">📊 Dashboard</button>
+    <button data-tab="modules">📚 Module</button>
+    <button data-tab="flashcards">⚡ Flashcards (EN)</button>
+    <button data-tab="notes">📝 Notizen (DE)</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ================= DASHBOARD ================= -->
+<section id="tab-dashboard" class="active">
+  <h2>Dashboard</h2>
+  <div class="grid stats">
+    <div class="card stat"><div class="num" id="st-ects">0</div><div class="lbl">ECTS passed</div></div>
+    <div class="card stat"><div class="num" id="st-open">0</div><div class="lbl">Module offen</div></div>
+    <div class="card stat"><div class="num" id="st-progress">0%</div><div class="lbl">Fortschritt</div></div>
+  </div>
+  <div class="card" style="margin-top:1rem">
+    <div class="lbl hint">ECTS-Fortschritt (alle hier gelisteten Module)</div>
+    <div class="bar" style="margin-top:.5rem"><div id="bar"></div></div>
+  </div>
+  <div class="card" style="margin-top:1rem">
+    <h3 style="margin-top:0">🎯 Next up</h3>
+    <div id="nextup"></div>
+    <p class="hint">Empfohlene Reihenfolge: Advanced Mathematics & Advanced Statistics zuerst — beides ist die Basis für Machine Learning, Deep Learning und Continual Learning.</p>
+  </div>
+  <div class="tip">
+    💡 <strong>Elective A – Tipp:</strong> <em>Reinforcement Learning (DLMAIRIL)</em> ist cool & relevant (RLHF → passt perfekt zu deinem NLP/LLM-Wissen). Alternativ: <em>Project: Generative Deep Learning</em> fürs Portfolio oder <em>Software Engineering for Data Intensive Sciences</em> für Praxis-Skills.<br>
+    Sobald du entschieden hast: in 📚 Module auf den Namen klicken und umbenennen.
+  </div>
+</section>
+
+<!-- ================= MODULE ================= -->
+<section id="tab-modules">
+  <h2>Module</h2>
+  <div class="card">
+    <form class="inline" id="addForm">
+      <input id="f-name" placeholder="Modulname" required>
+      <input id="f-code" placeholder="Code (z. B. DLMAIRIL)" style="max-width:200px">
+      <select id="f-sem">
+        <option value="1">Semester 1</option>
+        <option value="2">Semester 2</option>
+        <option value="3">Semester 3</option>
+        <option value="4">Semester 4</option>
+      </select>
+      <input id="f-ects" type="number" value="5" min="1" max="30" style="max-width:90px" title="ECTS">
+      <button class="primary" type="submit">+ Hinzufügen</button>
+    </form>
+    <p class="hint">Status-Button klicken zum Wechseln: Offen → In Arbeit → Passed ✅ · Name anklicken = umbenennen · Tipp: füge deine schon bestandenen Semester-1-Kurse hinzu, dann stimmt die ECTS-Statistik mit deinen echten 120 ECTS.</p>
+  </div>
+  <div id="modlist"></div>
+  <button id="resetBtn" class="del" style="margin-top:1rem">⚠ Alle Daten zurücksetzen</button>
+</section>
+
+<!-- ================= FLASHCARDS ================= -->
+<section id="tab-flashcards">
+  <h2>Flashcards <span class="hint">– Front auf Englisch (Auswendig-Lernen), Back auf Deutsch (Verständnis)</span></h2>
+  <div class="card" style="margin-bottom:1rem">
+    <form class="inline" id="cardForm">
+      <input id="c-deck" list="deckList" placeholder="Deck (z. B. Machine Learning)" required style="max-width:220px">
+      <datalist id="deckList"></datalist>
+      <input id="c-front" placeholder="Front (English)" required style="flex:1;min-width:200px">
+      <input id="c-back" placeholder="Back (Deutsch)" required style="flex:1;min-width:200px">
+      <button class="primary" type="submit">+ Card</button>
+    </form>
+  </div>
+  <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem">
+    <label class="hint" for="deckFilter">Deck:</label>
+    <select id="deckFilter"></select>
+    <span class="hint" id="fcStats"></span>
+  </div>
+  <div class="fc-wrap">
+    <div class="fc" id="fc" title="Klicken zum Umdrehen">
+      <div class="face front"><div class="lang">English</div><div class="content" id="fcFront"></div></div>
+      <div class="face back"><div class="lang">Deutsch</div><div class="content" id="fcBack"></div></div>
+    </div>
+  </div>
+  <div class="fc-btns">
+    <button class="btn-again" id="btnAgain" disabled>🔁 Nochmal</button>
+    <button class="btn-know" id="btnKnow" disabled>✅ Gewusst</button>
+    <button class="del" id="btnDelCard" title="Aktuelle Karte löschen">🗑</button>
+  </div>
+  <p class="hint" style="text-align:center;margin-top:.6rem">„Gewusst" schiebt die Karte eine Box höher (max. Box 3), „Nochmal" zurück in Box 1 — Karten in niedrigen Boxen kommen zuerst dran.</p>
+</section>
+
+<!-- ================= NOTIZEN ================= -->
+<section id="tab-notes">
+  <h2>Notizen <span class="hint">– für Verständnis & Projekte, auf Deutsch</span></h2>
+  <div class="card">
+    <label class="hint">Modul:</label><br>
+    <select id="noteSel" style="margin:.4rem 0 .8rem"></select>
+    <textarea id="noteArea" rows="12" style="width:100%" placeholder="Zusammenfassungen, Ideen, Projekt-Notizen …"></textarea>
+    <p class="hint">✨ Wird automatisch gespeichert.</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ================= Daten =================
+const LS = {m:'aihub_modules', c:'aihub_cards', n:'aihub_notes'};
+const DEFAULT_MODULES = [
+  {id:'m1', name:'Advanced Mathematics', code:'DLMDSAM-01', sem:1, credits:5, status:'open'},
+  {id:'m2', name:'Advanced Statistics', code:'DLMDSAS', sem:1, credits:5, status:'open'},
+  {id:'m3', name:'Machine Learning', code:'DLMDSML', sem:1, credits:5, status:'open'},
+  {id:'m4', name:'Project: AI Use Case', code:'DLMAIPAIUC', sem:1, credits:5, status:'open'},
+  {id:'m5', name:'Deep Learning', code:'DLMDSDL', sem:2, credits:5, status:'open'},
+  {id:'m6', name:'Continual Learning with Neural Networks', code:'DLMAICLNN', sem:2, credits:5, status:'open'},
+  {id:'m7', name:'Elective A (Auswahl offen – Tipp: Reinforcement Learning)', code:'TBD', sem:2, credits:5, status:'open'},
+  {id:'m8', name:'Data Engineering', code:'DLMDSEDE1', sem:3, credits:5, status:'open'},
+  {id:'m9', name:'Start Up Lab', code:'DLMIEESUL', sem:3, credits:5, status:'open'},
+  {id:'m10', name:'Case Study: Model Engineering', code:'DLMDSME', sem:3, credits:5, status:'open'},
+  {id:'m11', name:'NLP and LLM', code:'DLMMLNL01', sem:2, credits:5, status:'passed'},
+  {id:'m12', name:'Inference and Causality', code:'DLMAIIAC-01', sem:2, credits:5, status:'passed'},
+  {id:'m13', name:'Masterthesis (Platzhalter)', code:'—', sem:4, credits:30, status:'open'},
+];
+const SEED_CARDS = [
+  {id:'s1', deck:'Machine Learning', front:'What is overfitting?', back:'Overfitting: Das Modell lernt das Rauschen der Trainingsdaten auswendig statt der zugrundeliegenden Struktur → schlechte Generalisierung auf neuen Daten.', box:1},
+  {id:'s2', deck:'Machine Learning', front:'Explain the bias–variance tradeoff.', back:'Bias–Variance-Tradeoff: Hoher Bias = Underfitting (Modell zu einfach), hohe Varianz = Overfitting (Modell zu komplex). Ziel: optimales Gleichgewicht für minimalen Gesamtfehler.', box:1},
+  {id:'s3', deck:'Machine Learning', front:'What is gradient descent?', back:'Gradient Descent: Iteratives Optimierungsverfahren – die Parameter werden schrittweise entgegen dem Gradienten der Loss-Funktion bewegt (mit Lernrate η).', box:1},
+  {id:'s4', deck:'Machine Learning', front:'Precision vs. Recall?', back:'Precision = TP/(TP+FP): Wie viele der als positiv Vorhergesagten sind wirklich positiv? Recall = TP/(TP+FN): Wie viele der tatsächlich Positiven wurden gefunden?', box:1},
+  {id:'s5', deck:'Deep Learning', front:'What is backpropagation?', back:'Backpropagation: Berechnung der Gradienten der Loss-Funktion nach jedem Gewicht – mittels Kettenregel rückwärts durch das Netzwerk.', box:1},
+  {id:'s6', deck:'Deep Learning', front:'What is the vanishing gradient problem?', back:'Vanishing Gradients: In tiefen Netzen werden multiplizierte Ableitungen (< 1) immer kleiner → frühe Layer lernen kaum. Lösungen: ReLU, BatchNorm, Residual Connections.', box:1},
+];
+const SEED_NOTES = {m3:
+`# Machine Learning – Überblick
+- Supervised vs. Unsupervised vs. Reinforcement
+- Bias–Variance-Tradeoff
+- Metriken: Accuracy, Precision, Recall, F1, ROC/AUC
+- Pipeline: Daten → Preprocessing → Modell → Evaluation → Iteration`};
+
+// ================= State =================
+function load(k){ try{ return JSON.parse(localStorage.getItem(k)) }catch{ return null } }
+function save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch{} }
+let modules = load(LS.m) ?? JSON.parse(JSON.stringify(DEFAULT_MODULES));
+let cards   = load(LS.c) ?? JSON.parse(JSON.stringify(SEED_CARDS));
+let notes   = load(LS.n) ?? {...SEED_NOTES};
+const STATUS = {open:'Offen', inprogress:'▶ In Arbeit', passed:'✅ Passed'};
+
+// ================= Helpers =================
+const el = id => document.getElementById(id);
+const v  = id => el(id).value.trim();
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ================= Tabs =================
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('section').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  el('tab-' + b.dataset.tab).classList.add('active');
+}));
+
+// ================= Dashboard =================
+function renderDashboard(){
+  const totalC = modules.reduce((s,m) => s + Number(m.credits||0), 0);
+  const doneC  = modules.filter(m => m.status==='passed').reduce((s,m) => s + Number(m.credits||0), 0);
+  const pct = totalC ? Math.round(doneC/totalC*100) : 0;
+  el('st-ects').textContent = doneC + ' / ' + totalC;
+  el('st-open').textContent = modules.filter(m => m.status !== 'passed').length;
+  el('st-progress').textContent = pct + '%';
+  el('bar').style.width = pct + '%';
+  const next = modules.filter(m => m.status !== 'passed').slice(0,4);
+  el('nextup').innerHTML = next.length ? next.map((m,i) => `
+    <div class="mod"><span class="num-chip">${i+1}</span>
+      <div><div class="name">${esc(m.name)}</div>
+      <span class="code">${esc(m.code)}</span> <span class="hint">Sem ${m.sem} · ${m.credits} ECTS</span></div>
+    </div>`).join('') : '<p class="hint">🎉 Alles passed — gigantisch!</p>';
+}
+
+// ================= Module =================
+function renderModules(){
+  const sems = [...new Set(modules.map(m => m.sem))].sort();
+  el('modlist').innerHTML = sems.map(s => `
+    <div class="sem-title">Semester ${s}</div>
+    ${modules.filter(m => m.sem === s).map(m => `
+      <div class="mod">
+        <div><div class="name" data-id="${m.id}" title="Klicken zum Umbenennen">${esc(m.name)}</div>
+        <span class="code">${esc(m.code||'—')}</span> <span class="hint">${m.credits} ECTS</span></div>
+        <button class="pill ${m.status}" data-id="${m.id}">${STATUS[m.status]}</button>
+        <button class="del" data-del="${m.id}" title="Modul löschen">✕</button>
+      </div>`).join('')}`).join('');
+}
+el('modlist').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (pill){
+    const m = modules.find(x => x.id === pill.dataset.id);
+    m.status = m.status==='open' ? 'inprogress' : m.status==='inprogress' ? 'passed' : 'open';
+    save(LS.m, modules); renderModules(); renderDashboard(); return;
+  }
+  const nm = e.target.closest('.name');
+  if (nm){
+    const m = modules.find(x => x.id === nm.dataset.id);
+    const nn = prompt('Neuer Modulname:', m.name);
+    if (nn && nn.trim()){ m.name = nn.trim(); save(LS.m, modules); renderModules(); renderDashboard(); renderNoteSelect(); }
+    return;
+  }
+  const d = e.target.closest('[data-del]');
+  if (d && confirm('Modul wirklich löschen?')){
+    modules = modules.filter(x => x.id !== d.dataset.del);
+    save(LS.m, modules); renderModules(); renderDashboard(); renderNoteSelect();
+  }
+});
+el('addForm').addEventListener('submit', e => {
+  e.preventDefault();
+  modules.push({id:uid(), name:v('f-name'), code:v('f-code'), sem:Number(v('f-sem'))||1, credits:Number(v('f-ects'))||5, status:'open'});
+  save(LS.m, modules); e.target.reset(); el('f-ects').value = 5;
+  renderModules(); renderDashboard(); renderNoteSelect();
+});
+el('resetBtn').addEventListener('click', () => {
+  if (confirm('Wirklich ALLE Daten (Module, Karten, Notizen) zurücksetzen?')){
+    Object.values(LS).forEach(k => localStorage.removeItem(k));
+    location.reload();
+  }
+});
+
+// ================= Flashcards =================
+let cur = null;
+function renderDecks(){
+  const decks = [...new Set(cards.map(c => c.deck))].sort();
+  const f = el('deckFilter'), old = f.value;
+  f.innerHTML = '<option value="__all">Alle Decks</option>' + decks.map(d => `<option>${esc(d)}</option>`).join('');
+  if ([...f.options].some(o => o.value === old)) f.value = old;
+  el('deckList').innerHTML = decks.map(d => `<option value="${esc(d)}">`).join('');
+}
+const pool = () => { const d = el('deckFilter').value; return d==='__all' ? cards : cards.filter(c => c.deck === d); };
+function renderFcStats(){
+  const p = pool(), b = [1,2,3].map(i => p.filter(c => c.box === i).length);
+  el('fcStats').textContent = `${p.length} Karten · Box 1: ${b[0]} · Box 2: ${b[1]} · Box 3: ${b[2]}`;
+}
+function setFlipped(f){
+  el('fc').classList.toggle('flipped', f);
+  el('btnKnow').disabled = el('btnAgain').disabled = !f;
+}
+function nextCard(){
+  const p = pool();
+  if (!p.length){
+    cur = null;
+    el('fcFront').textContent = 'Noch keine Karten in diesem Deck – erstelle oben welche 👆';
+    el('fcBack').textContent = ''; setFlipped(false); renderFcStats(); return;
+  }
+  const min = Math.min(...p.map(c => c.box));
+  const cand = p.filter(c => c.box === min);
+  let n = cand[Math.floor(Math.random()*cand.length)];
+  if (cand.length > 1 && cur && n.id === cur.id) n = cand[(cand.indexOf(n)+1) % cand.length];
+  cur = n;
+  el('fcFront').textContent = cur.front;
+  el('fcBack').textContent = cur.back;
+  setFlipped(false); renderFcStats();
+}
+function rate(delta){
+  if (!cur) return;
+  cur.box = Math.min(3, Math.max(1, cur.box + delta));
+  save(LS.c, cards); nextCard();
+}
+el('fc').addEventListener('click', () => { if (cur) setFlipped(!el('fc').classList.contains('flipped')); });
+el('btnKnow').addEventListener('click', () => rate(1));
+el('btnAgain').addEventListener('click', () => rate(-2));
+el('deckFilter').addEventListener('change', nextCard);
+el('btnDelCard').addEventListener('click', () => {
+  if (!cur || !confirm('Diese Karte löschen?')) return;
+  cards = cards.filter(c => c.id !== cur.id);
+  save(LS.c, cards); renderDecks(); nextCard();
+});
+el('cardForm').addEventListener('submit', e => {
+  e.preventDefault();
+  cards.push({id:uid(), deck:v('c-deck')||'Allgemein', front:v('c-front'), back:v('c-back'), box:1});
+  save(LS.c, cards); e.target.reset(); renderDecks(); nextCard();
+});
+
+// ================= Notizen =================
+function renderNoteSelect(){
+  const sel = el('noteSel'), old = sel.value;
+  sel.innerHTML = modules.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  if ([...sel.options].some(o => o.value === old)) sel.value = old;
+  el('noteArea').value = notes[sel.value] || '';
+}
+el('noteSel').addEventListener('change', () => { el('noteArea').value = notes[el('noteSel').value] || ''; });
+el('noteArea').addEventListener('input', () => { notes[el('noteSel').value] = el('noteArea').value; save(LS.n, notes); });
+
+// ================= Init =================
+renderModules(); renderDashboard(); renderNoteSelect(); renderDecks(); nextCard();
+  // ━━━ Bulk-Import Advanced-Mathematics-Flashcards (läuft bei jedem Laden, überspringt Duplikate automatisch) ━━━
+  (() => {
+    const IMPORT = [
+      // ── Unit 1: Calculus ──
+      ["AdvMath U1 · Calculus","State the product rule for derivatives.","Produktregel: (u·v)′ = u′·v + u·v′"],
+      ["AdvMath U1 · Calculus","State the quotient rule.","Quotientenregel: (u/v)′ = (u′·v − u·v′) / v²"],
+      ["AdvMath U1 · Calculus","State the chain rule.","Kettenregel: f(x) = u(v(x)) ⟹ f′(x) = u′(v(x)) · v′(x)"],
+      ["AdvMath U1 · Calculus","Derivatives of xⁿ, eˣ, ln x, sin x, cos x?","xⁿ → n·xⁿ⁻¹ · eˣ → eˣ · ln x → 1/x · sin x → cos x · cos x → −sin x"],
+      ["AdvMath U1 · Calculus","Conditions for local extrema (stationary points)?","Notwendig: f′(a) = 0. Hinreichend: f″(a) < 0 → Maximum, f″(a) > 0 → Minimum"],
+      ["AdvMath U1 · Calculus","Fundamental theorem of calculus?","∫ₐᵇ f dx = F(b) − F(a) mit F′ = f; außerdem d/dx ∫ₐˣ f(u) du = f(x)"],
+      ["AdvMath U1 · Calculus","Integration by parts formula + when to use?","∫ f·g′ dx = f·g − ∫ f′·g dx. Typisch: Produkte wie x·sin x oder x·eˣ"],
+      ["AdvMath U1 · Calculus","Substitution rule?","∫ f(u(x))·u′(x) dx = ∫ f(u) du mit u = u(x). Typisch: innere Funktion, deren Ableitung steht außen"],
+      ["AdvMath U1 · Calculus","What is a partial derivative?","Ableitung von f(x,y) nach EINER Variablen; alle anderen Variablen werden wie Konstanten behandelt"],
+      ["AdvMath U1 · Calculus","Taylor series of order n at x₀?","Tₙf(x) = Σₖ₌₀ⁿ [f⁽ᵏ⁾(x₀)/k!]·(x−x₀)ᵏ — genauer, je näher x an x₀ und je höher n"],
+      ["AdvMath U1 · Calculus","Geometric meaning of the definite integral?","(Signed) Flächeninhalt zwischen Graph und x-Achse auf [a,b]"],
+      // ── Unit 2: Integral Transformations ──
+      ["AdvMath U2 · Integral Transforms","Define the continuous convolution (f∗g)(z).","(f∗g)(z) = ∫₋∞^∞ f(x)·g(z−x) dx. Sind X, Y unabhängig mit Dichten f, g, dann hat X+Y die Dichte f∗g"],
+      ["AdvMath U2 · Integral Transforms","Is convolution commutative?","Ja: f∗g = g∗f (Beweis durch Substitution y = z−x)"],
+      ["AdvMath U2 · Integral Transforms","Discrete convolution in image processing?","(K∗f)(x,y) = Σ K(i,j)·f(x−i, y−j). Gauß-Kernel glättet, Laplace-Kernel detektiert Kanten"],
+      ["AdvMath U2 · Integral Transforms","Modulus and conjugate of z = x + yi?","|z| = √(x²+y²), z̄ = x − yi, und z·z̄ = |z|²"],
+      ["AdvMath U2 · Integral Transforms","State Euler's formula.","e^(iφ) = cos φ + i·sin φ → Polarform z = r·e^(iφ); Grundlage der Fourier-Analyse"],
+      ["AdvMath U2 · Integral Transforms","Real Fourier series of an L-periodic function?","f(t) = a₀/2 + Σₙ (aₙ·cos(ωₙt) + bₙ·sin(ωₙt)) mit ωₙ = 2πn/L; Koeffizienten per Integration über eine Periode"],
+      ["AdvMath U2 · Integral Transforms","Fourier series vs. Fourier transform?","Reihe: f muss L-periodisch sein, diskrete Frequenzen ωₙ, Gewichte cₙ. Transform: NICHT periodisch nötig, kontinuierliche ω, Gewicht f̃(ω)"],
+      ["AdvMath U2 · Integral Transforms","Define the Fourier transform (course convention).","f̃(ω) = (1/√(2π)) ∫ f(t)·e^(−iωt) dt; Rücktransformation mit e^(+iωt). Zeitdomain ↔ Frequenzdomain"],
+      ["AdvMath U2 · Integral Transforms","Fourier transform of a Gaussian?","Gauß → Gauß: fσ(t) = (1/√(2πσ²))·exp(−t²/2σ²) ↦ f̃σ(ω) = (1/√(2π))·exp(−σ²ω²/2). Breit im Zeitraum = schmal im Frequenzraum"],
+      // ── Unit 3: Vector Algebra ──
+      ["AdvMath U3 · Vector Algebra","How to get the unit vector of u?","û = u/|u| mit |u| = √(u₁²+…+uₙ²) — reine Richtung, Länge 1"],
+      ["AdvMath U3 · Vector Algebra","When are vectors linearly dependent?","Wenn einer als Linearkombination der anderen darstellbar ist; sonst linear unabhängig"],
+      ["AdvMath U3 · Vector Algebra","n vectors in ℝⁿ — when are they a basis?","⟺ linear unabhängig ⟺ det(v₁,…,vₙ) ≠ 0. Jede Basis von ℝⁿ hat genau n Vektoren"],
+      ["AdvMath U3 · Vector Algebra","Scalar product: coordinate form + geometry?","u·v = Σ uᵢvᵢ = |u|·|v|·cos θ → Zwischenwinkel; u·v = 0 ⟺ u ⊥ v"],
+      ["AdvMath U3 · Vector Algebra","Projection of v onto u?","Als Länge: |v|·cos θ = (u·v)/|u|; als Vektor: (u·v/|u|²)·u"],
+      ["AdvMath U3 · Vector Algebra","Cross product u × v (components)?","u×v = (u₂v₃−u₃v₂, u₃v₁−u₁v₃, u₁v₂−u₂v₁) — Merkformel: 3×3-Determinante mit e₁,e₂,e₃"],
+      ["AdvMath U3 · Vector Algebra","Geometric properties of the cross product?","u×v ⊥ u und ⊥ v; |u×v| = |u|·|v|·sin θ = Fläche des aufgespannten Parallelograms"],
+      // ── Unit 4: Vector Calculus ──
+      ["AdvMath U4 · Vector Calculus","How to differentiate/integrate vector-valued functions?","Komponentenweise: v = dx/dt (Geschwindigkeit), a = dv/dt; Integration komponentenweise + Anfangsbedingungen"],
+      ["AdvMath U4 · Vector Calculus","Path integral of a vector field (work)?","W = ∫_C F·dr = ∫ₐᵇ F(r(t))·r′(t) dt — Arbeit einer Kraft entlang des Wegs C"],
+      ["AdvMath U4 · Vector Calculus","Parametrization of a line segment from a to b?","r(t) = a + t·(b−a), t ∈ [0,1]"],
+      ["AdvMath U4 · Vector Calculus","Scalar field vs. vector field?","Skalarfeld: Punkt ↦ Zahl (Temperatur, Druck). Vektorfeld: Punkt ↦ Vektor (Wind, Magnetfeld)"],
+      ["AdvMath U4 · Vector Calculus","Gradient of a scalar field — definition & meaning?","∇φ = (∂φ/∂x, ∂φ/∂y, ∂φ/∂z) — Richtung und Rate des steilsten Anstiegs"],
+      ["AdvMath U4 · Vector Calculus","Divergence — definition & meaning?","∇·F = ∂Fx/∂x + ∂Fy/∂y + ∂Fz/∂z — Netto-Zufluss/Abfluss (Quelle/Senke) an einem Punkt"],
+      ["AdvMath U4 · Vector Calculus","Curl — meaning? Conservative fields?","∇×F = Rotation/Zirkulation. F konservativ (F = ∇φ) ⟹ ∇×F = 0 (wirbelfrei)"],
+      // ── Unit 5: Matrices & Vector Spaces ──
+      ["AdvMath U5 · Matrices","When is A·B defined, and how computed?","Spaltenzahl(A) = Zeilenzahl(B); cᵢⱼ = Σₖ aᵢₖ·bₖⱼ (Zeile mal Spalte). Im Allgemeinen AB ≠ BA"],
+      ["AdvMath U5 · Matrices","The 3 elementary row operations (Gauss)?","1) Zeilen tauschen, 2) Zeile × c≠0, 3) Vielfaches einer Zeile addieren — Lösungsmenge bleibt gleich"],
+      ["AdvMath U5 · Matrices","Row echelon form → which solution cases?","Zeile 0…0|c, c≠0 → keine Lösung. Pivot für jede Variable → eindeutig. Freie Variable → unendlich viele"],
+      ["AdvMath U5 · Matrices","det 2×2 and rule of Sarrus (3×3)?","det[a b; c d] = ad − bc. Sarrus: +a₁₁a₂₂a₃₃ +a₁₂a₂₃a₃₁ +a₁₃a₂₁a₃₂ −a₁₃a₂₂a₃₁ −a₁₁a₂₃a₃₂ −a₁₂a₂₁a₃₃"],
+      ["AdvMath U5 · Matrices","Laplace expansion of the determinant?","det A = Σⱼ (−1)^(i+j)·aᵢⱼ·Mᵢⱼ (nach Zeile i); Mᵢⱼ = Minor = det der Streichmatrix (Zeile i, Spalte j)"],
+      ["AdvMath U5 · Matrices","When is A invertible? Formula for A⁻¹?","Genau dann, wenn det A ≠ 0. A⁻¹ = (1/det A)·Cᵀ mit Cofaktoren Cᵢⱼ = (−1)^(i+j)·Mᵢⱼ; dann Ax = b ⟺ x = A⁻¹b"],
+      ["AdvMath U5 · Matrices","Define eigenvector/eigenvalue. How find eigenvalues?","Ax = λx mit x ≠ 0; Eigenwerte = Nullstellen von p_A(λ) = det(A − λI)"],
+      ["AdvMath U5 · Matrices","Geometric vs. algebraic multiplicity?","Geometrisch: # lin. unabhängiger Eigenvektoren zu λ; algebraisch: Vielfachheit als Nullstelle. 1 ≤ geo ≤ alg ≤ n"],
+      ["AdvMath U5 · Matrices","Diagonalization: how and why?","S⁻¹AS = D, Spalten von S = Eigenvektoren. Nutzen: Aᵏ = S·Dᵏ·S⁻¹. Nur möglich bei n lin. unabhängigen Eigenvektoren"],
+      ["AdvMath U5 · Matrices","Tensors — ranks and dyadic product?","Rang 0: Skalar · 1: Vektor · 2: Matrix · 3: Triade. (x⊗y)ᵢⱼ = xᵢ·yⱼ, d. h. x⊗y = x·yᵀ"],
+      // ── Unit 6: Information Theory ──
+      ["AdvMath U6 · Information Theory","How does linear regression minimize the MSE?","ŷ = β̂₀ + β̂₁x; β̂₁ = Cov/Var (empirisch), β̂₀ = ȳ − β̂₁x̄. Quadrierung bestraft große Abweichungen stärker"],
+      ["AdvMath U6 · Information Theory","Gini index (income inequality)?","G = A/(A+B) über Lorenz-Kurve; A = Fläche zwischen Gleichheitsgerade und Kurve. G=0 → Gleichheit, G→1 → extreme Ungleichheit"],
+      ["AdvMath U6 · Information Theory","Gini impurity (decision trees)?","G(p) = 1 − Σ p(xᵢ)² — Wahrscheinlichkeit, dass zwei unabhängige Züge verschiedene Klassen haben; klein = gute Trennschärfe"],
+      ["AdvMath U6 · Information Theory","Information content of an outcome?","I(xᵢ) = −log₂ p(xᵢ): seltenes Ereignis → hoher Informationsgehalt, sicheres Ereignis → 0"],
+      ["AdvMath U6 · Information Theory","Shannon entropy — formula and extremes?","H(p) = −Σ p(xᵢ)·log₂ p(xᵢ) = mittlerer Informationsgehalt. H=0 ⟺ deterministisch; maximal ⟺ Gleichverteilung"],
+      ["AdvMath U6 · Information Theory","Shannon's source coding theorem?","Optimaler Code: H(p) ≤ E(L) < H(p)+1 — Entropie = minimaler Speicherbedarf verlustfreier Kompression"],
+      ["AdvMath U6 · Information Theory","Cross entropy — formula and key property?","H(p,q) = −Σ p(xᵢ)·log₂ q(xᵢ); minimal (H(p,p) = H(p)) ⟺ q = p; NICHT symmetrisch"],
+      ["AdvMath U6 · Information Theory","KL divergence — formula, properties, relation to H?","D_KL(p‖q) = Σ p·log₂(p/q) = H(p,q) − H(p); ≥ 0, = 0 ⟺ p = q; nicht symmetrisch, also keine Distanz im math. Sinn"],
+      ["AdvMath U6 · Information Theory","ROC curve and AUC?","ROC: TPR(τ) vs. FPR(τ) über Schwellen τ. AUC: 1 = perfekt, 0.5 = Raten"],
+      ["AdvMath U6 · Information Theory","Confusion matrix: TP, FP, FN, TN + error types?","TP korrekt positiv, FN verpasst, FP Fehlalarm, TN korrekt negativ. FP = Fehler 1. Art, FN = Fehler 2. Art"],
+    ];
+    const k = "aihub_cards";
+    const cards = JSON.parse(localStorage.getItem(k) || "[]");
+    const have  = new Set(cards.map(c => c.front));
+    let n = 0;
+    IMPORT.forEach(([deck, front, back]) => {
+      if (!have.has(front)) {
+        cards.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,7), deck, front, back, box: 1 });
+        n++;
+      }
+    });
+    localStorage.setItem(k, JSON.stringify(cards));
+  })();
+   // ━━━ Import: Verständnisskizzen Advanced Mathematics (einmalig, hängt an bestehende Notizen an) ━━━
+  (() => {
+    const MARKER = "═══ VERSTÄNDNISSKIZZEN · ADVANCED MATHEMATICS ═══";
+    const mod = modules.find(m => (m.code || "").toUpperCase().startsWith("DLMDSAM"))
+             || modules.find(m => /advanced mathematics/i.test(m.name));
+    const key = mod ? mod.id : "m1";
+    if ((notes[key] || "").includes(MARKER)) return; // schon importiert → nichts tun
+    const SKETCHES = `═══ VERSTÄNDNISSKIZZEN · ADVANCED MATHEMATICS ═══
+(Quellen: Sessions 1–6 + ILSE-Skripte + Course Book)
+
+━━━━━━━━ UNIT 1 · CALCULUS ━━━━━━━━
+
+■ Kernidee: Ableitung = lokale Änderungsrate (Tangentensteigung), Integral = Akkumulation
+  ((signed) Fläche). Der Hauptsatz verbindet beides als Umkehroperationen:
+    ∫ₐᵇ f(x) dx = F(b) − F(a)  mit F′ = f        d/dx ∫ₐˣ f(u) du = f(x)
+■ Ableitungsregeln:
+  • (u·v)′ = u′v + uv′   • (u/v)′ = (u′v − uv′)/v²   • Kette: f′(x) = u′(v(x))·v′(x)
+  • xⁿ → n·xⁿ⁻¹   eˣ → eˣ   ln x → 1/x   sin → cos   cos → −sin
+■ Extremstellen: notwendig f′(a) = 0; hinreichend f″(a) < 0 → Max, f″(a) > 0 → Min.
+■ Partielle Integration (= integrierte Produktregel): ∫ f·g′ dx = f·g − ∫ f′·g dx
+  Beispiel: ∫ x·sin x dx = −x·cos x + sin x + c
+■ Substitution (= integrierte Kettenregel): ∫ f(u(x))·u′(x) dx = ∫ f(u) du
+  Beispiel: ∫₀^(π/2) e^(sin x)·cos x dx = ∫₀¹ eᵘ du = e − 1
+■ Partielle Ableitungen: nach EINER Variablen ableiten, alle anderen wie Konstanten behandeln.
+■ Mehrfache Integrale: von innen nach außen auflösen; Integrationsbereich ZUERST skizzieren!
+  Beispiel Dreieck: ∬ x²y dA über 0 ≤ y ≤ 1−x, 0 ≤ x ≤ 1 → 1/60.
+■ Taylor: Tₙf(x) = Σₖ₌₀ⁿ [f⁽ᵏ⁾(x₀)/k!]·(x−x₀)ᵏ — genauer je näher x an x₀ und je größer n.
+■ AI-Bezug: Gradientenabstieg = wiederholte lokale Linearisierung (Taylor 1. Ordnung) des Loss.
+
+━━━━━━━━ UNIT 2 · INTEGRAL TRANSFORMATIONS ━━━━━━━━
+
+■ Faltung: (f∗g)(z) = ∫₋∞^∞ f(x)·g(z−x) dx
+  • X, Y unabhängig mit Dichten f, g ⟹ X+Y hat Dichte f∗g (Messfehler-Modell).
+  • kommutativ: f∗g = g∗f (Substitution y = z − x).
+  • diskret (Bildfilter): (K∗f)(x,y) = Σ K(i,j)·f(x−i, y−j); Gauß-Kernel glättet, Laplace findet Kanten.
+■ Komplexe Zahlen: z = x + yi, |z| = √(x²+y²), z̄ = x − yi, Polarform z = r·e^(iφ).
+  Euler: e^(iφ) = cos φ + i·sin φ — die Brücke in die Fourier-Welt.
+■ Fourier-REIHE (f ist L-periodisch): f(t) = a₀/2 + Σₙ (aₙcos(ωₙt) + bₙsin(ωₙt)), ωₙ = 2πn/L.
+  Koeffizienten durch Integration über eine Periode. Komplexe Form: cₙ = (1/L)·∫ f(t)·e^(−iωₙt) dt.
+■ Fourier-TRANSFORMATION (keine Periodizität nötig): f̃(ω) = (1/√(2π))·∫ f(t)·e^(−iωt) dt,
+  Rücktransformation mit e^(+iωt). Übersicht:
+    Reihe:    periodisch ✓   Frequenzen diskret (ωₙ)        Gewichte cₙ
+    Transf.:  periodisch ✗   Frequenzen kontinuierlich (ω)  Gewichte f̃(ω)
+■ Merkbeispiele:
+  • Rechteckpuls (Breite 2, Höhe 1/2) → f̃(ω) = (1/√(2π))·sin(ω)/ω  (si-Funktion)
+  • e^(−λ|t|) → √(2/π)·λ/(ω²+λ²)
+  • Gauß → Gauß: breit im Zeitraum ⟺ schmal im Frequenzraum (und umgekehrt)!
+■ AI-Bezug: diskrete Faltung = Kernmechanik von CNNs; Fourier = Signalverarbeitung/Spektrogramme.
+
+━━━━━━━━ UNIT 3 · VECTOR ALGEBRA ━━━━━━━━
+
+■ Vektor = Richtung + Länge. Einheitsvektor: û = u/|u|.
+■ Basis ℝⁿ: n Vektoren v₁,…,vₙ sind Basis ⟺ linear unabhängig ⟺ det(v₁ … vₙ) ≠ 0.
+  Linear abhängig ⟺ ein Vektor ist Linearkombination der anderen.
+■ Skalarprodukt: u·v = Σᵢ uᵢvᵢ = |u|·|v|·cos θ
+  • Winkel: cos θ = (u·v)/(|u|·|v|)      • u·v = 0 ⟺ orthogonal
+  • Projektion von v auf u: (u·v/|u|²)·u   (als Länge: |v|·cos θ)
+  • Beispiel: u = (−1,−2,2), v = (0,3,4) → cos θ = 2/15 → θ ≈ 82.3°
+■ Kreuzprodukt (nur ℝ³): u×v = (u₂v₃−u₃v₂, u₃v₁−u₁v₃, u₁v₂−u₂v₁)
+  • u×v ⊥ u und u×v ⊥ v      • |u×v| = |u|·|v|·sin θ = Parallelogrammfläche
+  • anti-kommutativ: u×v = −v×u, u×u = 0⃗      • Merkformel: 3×3-Determinante mit e₁,e₂,e₃
+■ AI-Bezug: Kosinus-Ähnlichkeit = normalisiertes Skalarprodukt — DIE Metrik für Embeddings (NLP/LLMs).
+
+━━━━━━━━ UNIT 4 · VECTOR CALCULUS ━━━━━━━━
+
+■ Vektorwertige Funktionen: komponentenweise ableiten/integrieren.
+  r(t) Position → v(t) = r′(t) Geschwindigkeit → a(t) = v′(t) Beschleunigung.
+  Kreisbewegung mit konstanter Geschwindigkeit: v ⊥ r und a ⊥ v.
+■ Wegintegral (= Arbeit): W = ∫_C F·dr = ∫ₐᵇ F(r(t))·r′(t) dt
+  Rezept: ① Weg parametrisieren ② r′(t) berechnen ③ Skalarprodukt integrieren.
+  Strecke a→b: r(t) = a + t·(b−a), t ∈ [0,1]. Polygonzug = Summe der Teilstrecken-Integrale.
+■ Felder: Skalarfeld Punkt ↦ Zahl (Temperatur, Druck, Wassertiefe);
+  Vektorfeld Punkt ↦ Vektor (Wind, Kraft). Wind: Richtung = F̂, Stärke = |F|.
+■ Nabla ∇ = (∂/∂x, ∂/∂y, ∂/∂z) liefert drei Operatoren:
+  • Gradient ∇φ → steilster Anstieg eines Skalarfelds (Richtung + Rate)
+  • Divergenz ∇·F → Quellen (+) / Senken (−) eines Vektorfelds
+  • Curl ∇×F → Rotation / Wirbelstärke
+■ Konservative Felder: F = ∇φ ⟹ ∇×F = 0⃗ (wirbelfrei); Umkehrung gilt bei einfach
+  zusammenhängendem Gebiet. Dann ist das Wegintegral WEGUNABHÄNGIG:
+    ∫_C F·dr = φ(r(b)) − φ(r(a))
+■ AI-Bezug: ∇φ am Loss = Gradientenrichtung — genau dort „wohnt" der Gradientenabstieg.
+
+━━━━━━━━ UNIT 5 · MATRICES AND VECTOR SPACES ━━━━━━━━
+
+■ Matrix-Multiplikation: cᵢⱼ = Σₖ aᵢₖ·bₖⱼ (Zeile × Spalte). Definiert, wenn
+  Spalten(A) = Zeilen(B). Im Allgemeinen AB ≠ BA! Transponierte: (AB)ᵀ = BᵀAᵀ. LGS: Ax = b.
+■ Gauß-Algorithmus: 3 elementare Zeilenoperationen (① tauschen ② ×c≠0 ③ Vielfaches
+  addieren) → Zeilenstufenform → Rückwärtseinsetzen. Die 3 Lösungsfälle:
+  • Zeile 0…0|c mit c ≠ 0 → KEINE Lösung
+  • Pivot für jede Variable → EINDEUTIG
+  • Variable ohne Pivot ist frei (x₃ = t) → UNENDLICH viele Lösungen
+■ Determinante: 2×2: ad − bc · 3×3: Sarrus · n×n: Laplace-Entwicklung (Minoren Mᵢⱼ).
+  Nutzen: Invertierbarkeit, lineare Unabhängigkeit, Eigenwerte.
+■ Inverse: invertierbar ⟺ det A ≠ 0; A⁻¹ = (1/det A)·Cᵀ mit Cᵢⱼ = (−1)^(i+j)·Mᵢⱼ.
+■ Eigenwerte/-vektoren: Ax = λx mit x ≠ 0. Eigenwerte = Nullstellen von p_A(λ) = det(A − λI).
+  • geometrische Mult. = # lin. unabhängiger Eigenvektoren zu λ; algebraische = Potenz im
+    char. Polynom. Es gilt: 1 ≤ geo ≤ alg ≤ n.
+  • Beispiel 1: [[−1,6],[−1,4]] → λ = 1, 2 — diagonalisierbar.
+  • Beispiel 2: [[1,1],[0,1]] → λ = 1 (alg. 2), nur EIN Eigenvektor → NICHT diagonalisierbar.
+■ Diagonalisierung: n lin. unabhängige Eigenvektoren ⟹ S⁻¹AS = D, Spalten von S = Eigenvektoren.
+  Nutzen: Aᵏ = S·Dᵏ·S⁻¹ (Matrixpotenzen werden trivial!).
+■ Tensoren: Rang 0 Skalar · 1 Vektor · 2 Matrix · 3 Triade.
+  Dyadisches Produkt: (x⊗y)ᵢⱼ = xᵢ·yⱼ, d. h. x⊗y = x·yᵀ.
+■ AI-Bezug: PCA (Eigenanalyse der Kovarianzmatrix), PageRank (Eigenvektor der Google-Matrix),
+  jedes Dense-Layer = lineare Abbildung + Nichtlinearität.
+
+━━━━━━━━ UNIT 6 · INFORMATION THEORY ━━━━━━━━
+
+■ Lineare Regression & MSE: ŷ = β̂₀ + β̂₁x minimalisiert MSE = (1/N)·Σ(ŷᵢ − yᵢ)².
+  β̂₁ = Cov(x,y)/Var(x), β̂₀ = ȳ − β̂₁·x̄.
+  Beispiel (0;0.7),(1;1.1),(2;1.7): β̂₁ = 1/2, β̂₀ = 2/3 → MSE = 1/450.
+■ Gini-INDEX (Verteilungsungleichheit, z. B. Einkommen): G = A/(A+B) über die Lorenz-Kurve;
+  A = Fläche zwischen Gleichheitsgerade und Kurve. G = 0 → Gleichheit, G → 1 → Ungleichheit.
+  Rechnen: B als Trapez-Summe ODER B = ∫₀¹ f(x) dx. Beispiel f(x) = x⁴ → B = 1/5 → G = 0.6.
+  Real: Deutschland ≈ 0.297 (2019), Norwegen 0.254, USA 0.390, Südafrika 0.632.
+  ⚠ Nicht verwechseln mit → Gini-IMPURITY:
+■ Gini-Impurity (Decision Trees): G(p) = 1 − Σ p(xᵢ)² = P(zwei unabhängige Züge verschieden).
+  klein = hohe Trennschärfe; min = 0 (deterministisch), max bei Gleichverteilung.
+■ Informationsgehalt: I(xᵢ) = −log₂ p(xᵢ) — seltenes Ereignis = viel Info, sicheres = 0.
+■ Shannon-Entropie: H(p) = −Σ p(xᵢ)·log₂ p(xᵢ) = mittlerer Informationsgehalt.
+  H = 0 ⟺ deterministisch · maximal ⟺ Gleichverteilung.
+  Münze fair (½/½): H = 1 · Münze 3:1: H ≈ 0.811.
+■ Quellencodierung (Shannon): optimales Codebuch erfüllt H(p) ≤ E(L) < H(p) + 1.
+  Huffman p = (0.4, 0.3, 0.2, 0.1): E(L) = 1.9 vs. H(p) ≈ 1.846 ✓.
+■ Cross-Entropie: H(p,q) = −Σ p(xᵢ)·log₂ q(xᵢ) = mittlerer Informationsgehalt der Schätzung q
+  unter der wahren Verteilung p; = Speicherbedarf, wenn man q annimmt, aber p gilt.
+■ KL-Divergenz: D_KL(p‖q) = Σ p·log₂(p/q) = H(p,q) − H(p).
+  • D ≥ 0 · D = 0 ⟺ p = q · NICHT symmetrisch: D(p‖q) ≠ D(q‖p)!
+  Merksatz: H(p,q) = H(p) + D_KL(p‖q) → „eigene Unsicherheit + Fehlanpassung".
+  Beispiel Krebsdiagnose: wahr (S,H) sicher, q(S,H) = 0.72 → H(p,q) = −log₂(0.72) ≈ 0.474.
+■ ROC/AUC (Binärklassifikation): Confusion Matrix TP/FP/FN/TN (FP = Fehler 1. Art,
+  FN = Fehler 2. Art). Schwellenwert τ: Ŷ = 1 falls Score X > τ.
+  TPR(τ) = P(X>τ | Y=1), FPR(τ) = P(X>τ | Y=0). ROC-Kurve: TPR vs. FPR über alle τ.
+  AUC: 1 = perfekt, 0.5 = Raten.
+■ AI-Bezug: Cross-Entropy-Loss = Standard-Trainingsloss für Klassifikatoren & LLMs.
+
+━━━━━━━━ ✅ SELF-CHECK-LÖSUNGEN (Kontrolle) ━━━━━━━━
+
+• Unit 1: 1a (stationär ≠ Extremum, z. B. x³ bei 0) · 2d · 3a (Stammfunktion nicht eindeutig, +c)
+• Unit 2: Lösungshinweise in den Speaker Notes der Session-2-pptx (u. a. Fourier-Transform gilt
+  auch für nicht-periodische Funktionen; FT von e^(iω₀t) → Delta-Ausschläge bei ±ω₀)
+• Unit 3: Einheitsvektor (1,2,2)/3 · Winkel (0,1)∧(3,4): arccos(4/5) ≈ 36.9° · Kollinearitätstest
+• Unit 4: 1b (Vektor-Integral ist kein Skalar, kann keine Arbeit sein!) · 2a (Wassertiefe) · 3d
+• Unit 5: 1a (3×10000 / 10000×4 / 4×3) · 2d (det = 12 − 12 = 0) · 3b (Dreiecksmatrix: Diagonale!)
+• Unit 6: 1a (hohe Ungleichheit → G nahe 1) · 2b (Gleichverteilung = max. Entropie) · 3c
+
+━━━━━━━━ 🎯 KLAUSUR-CROSSREFS ━━━━━━━━
+
+• Learning Sprint Session 7: 7 Review-Aufgaben (Integrale, Taylor/Fourier, Faltung/FT, Felder,
+  Vektoren, Matrix-Diagonalisierung, Cross-Entropy) — Lösungen siehe Chat/Exam-Prep.
+• Transfer Task U1: ∫₀^∞ x²·e^(−x) dx = 2 · ∬ xy² über Dreieck = 1/60 · Taylor 3. Ordnung bei 0.
+• Transfer Task U5: Diagonalisierung [[3,−1,0],[0,2,0],[1,2,1]] → λ = 1, 2, 3.
+  diagonalisierbar ⟹ invertierbar? NEIN (Diagonalmatrix mit 0-Eintrag: det = 0).
+  invertierbar ⟹ diagonalisierbar? NEIN ([[1,1],[0,1]]: det = 1, nur 1 Eigenvektor).
+• Transfer Task U6: p = [0.1,0.4,0.5], q = [0.8,0.15,0.05]:
+  H(p) ≈ 1.361, H(q) ≈ 0.884, D_KL(p‖q) ≈ 1.927, D_KL(q‖p) ≈ 2.022 (asymmetrisch!),
+  H(p,q) ≈ 3.288, H(q,p) ≈ 2.906. Teil 5: a) WAHR (r liegt der Gleichverteilung am nächsten)
+  b) FALSCH (q weicht stärker von r ab als p).`;
+    notes[key] = (notes[key] && notes[key].trim()) ? notes[key].trimEnd() + "\n\n\n" + SKETCHES : SKETCHES;
+    save(LS.n, notes);
+    renderNoteSelect();
+  })(); 
+</script>
+</body>
+</html>
