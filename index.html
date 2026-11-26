@@ -63,6 +63,10 @@ button.primary:hover{filter:brightness(1.12)}
 .btn-know{background:rgba(52,211,153,.12);border:1px solid var(--ok);color:var(--ok)}
 .btn-again{background:rgba(248,113,113,.12);border:1px solid var(--bad);color:var(--bad)}
 .btn-know:disabled,.btn-again:disabled{opacity:.35;cursor:not-allowed}
+.fm{font-family:ui-monospace,monospace;font-size:.95rem;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;margin:.4rem 0;white-space:pre-wrap;line-height:1.6;overflow-x:auto}
+.fm-label{color:var(--accent2);font-size:.8rem;text-transform:uppercase;letter-spacing:1px;margin-top:.8rem}
+.fm-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+@media(max-width:640px){.fm-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -75,8 +79,9 @@ button.primary:hover{filter:brightness(1.12)}
     <button data-tab="modules">📚 Module</button>
     <button data-tab="flashcards">⚡ Flashcards (EN)</button>
     <button data-tab="notes">📝 Notizen (DE)</button>
-	<button data-tab="notes">📝 Notizen (DE)</button>
+	<button data-tab="formulas">📐 Formel</button>
 	<button data-tab="exam">🎯 Exam Prep</button>
+	<button data-tab="quiz">🧠 Quiz (EN)</button>
 
   </nav>
 </header>
@@ -281,32 +286,69 @@ T₂f(x) = 0 + 0·x + (2/2!)x² = x²</pre>
     </div>
   </details>
 </section>
+<!-- ================= QUIZ ================= -->
+<section id="tab-quiz">
+  <h2>🧠 Multiple-Choice-Training <span class="hint">– Self-Check-Fragen aller 6 Units · auf Englisch wie in der Prüfung</span></h2>
+  <div class="card" style="margin-bottom:1rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+    <label class="hint" for="quizFilter">Unit:</label>
+    <select id="quizFilter">
+      <option value="all">Alle Units</option>
+      <option value="1">Unit 1 · Calculus</option>
+      <option value="2">Unit 2 · Integral Transformations</option>
+      <option value="3">Unit 3 · Vector Algebra</option>
+      <option value="4">Unit 4 · Vector Calculus</option>
+      <option value="5">Unit 5 · Matrices & Vector Spaces</option>
+      <option value="6">Unit 6 · Information Theory</option>
+    </select>
+    <button class="primary" id="quizReset" type="button">↺ Zurücksetzen</button>
+    <span class="hint" id="quiz-score" style="margin-left:auto"></span>
+  </div>
+  <div id="quiz-list"></div>
+</section>
+<!-- ================= FORMELSAMMLUNG ================= -->
+<section id="tab-formulas">
+  <h2>📐 Formelsammlung <span class="hint">– Alle 6 Units · zweisprachig · mit Anwendungshinweisen</span></h2>
+  <div class="card" style="margin-bottom:1rem">
+    <p style="margin-top:0">💡 <strong>Nutzungs-Tipp:</strong> Die Formeln sind so sortiert, wie sie in den Klausuraufgaben vorkommen. Zu jeder Formel steht der <span style="color:var(--ok)">grüne Anwendungshinweis</span> — genau das, was in Multiple-Choice-Fragen oft die Antwort ist. Am Ende: die 10 wichtigsten Rechen-Tricks.</p>
+  </div>
+  <div id="formulas-list"></div>
+</section>
 </main>
 
 <script>
 // ================= Daten =================
 const LS = {m:'aihub_modules', c:'aihub_cards', n:'aihub_notes'};
 const DEFAULT_MODULES = [
-  // === AKTIVE PRIORITÄTEN (1. SEMESTER) ===
-  {id:'act-1', name:'Advanced Mathematics', code:'DLMDSAM-01', sem:1, credits:5, status:'open', priority:1},
-  {id:'act-2', name:'Start Up Lab', code:'DLMIEESUL', sem:1, credits:5, status:'open', priority:2},
-  {id:'act-3', name:'Data Engineering', code:'DLMDSEDE1', sem:1, credits:5, status:'open', priority:3},
-  
-  // === SCHON BESTANDEN (nur zur Vollständigkeit im Hub) ===
+  // === AKTIV IN ARBEIT (deine 3 aktuellen Fächer) ===
+  {id:'act-1', name:'Advanced Mathematics', code:'DLMDSAM-01', sem:1, credits:5, status:'inprogress', priority:1},
+  {id:'act-2', name:'Start Up Lab (Elective C)', code:'DLMIEESUL', sem:1, credits:5, status:'inprogress', priority:2},
+  {id:'act-3', name:'Data Engineering (Elective B)', code:'DLMDSEDE1', sem:1, credits:5, status:'inprogress', priority:3},
+
+  // === ELECTIVE A (Entscheidung gefallen) ===
+  {id:'el-a', name:'Elective A: Seminar: Current Topics in AI', code:'DLMAISCTAI01', sem:2, credits:5, status:'open'},
+
+  // === ELECTIVE C, zweiter Teil ===
+  {id:'el-c2', name:'Elective C: Case Study: Model Engineering', code:'DLMDSME', sem:3, credits:5, status:'open'},
+
+  // === NOCH OFFEN AUS DEM CURRICULUM ===
+  {id:'s1-2', name:'Advanced Statistics', code:'DLMDSAS', sem:1, credits:5, status:'open'},
+  {id:'s1-3', name:'Machine Learning', code:'DLMDSML', sem:1, credits:5, status:'open'},
+  {id:'s1-4', name:'Project: AI Use Case', code:'DLMAIPAIUC', sem:1, credits:5, status:'open'},
+  {id:'s2-1', name:'Deep Learning', code:'DLMDSDL', sem:2, credits:5, status:'open'},
+  {id:'s2-2', name:'Continual Learning with Neural Networks', code:'DLMAICLNN', sem:2, credits:5, status:'open'},
+
+  // === SEMESTER 4: MASTERTHESIS ===
+  {id:'th-1', name:'Master Thesis', code:'MMTHE01', sem:4, credits:27, status:'open'},
+  {id:'th-2', name:'Colloquium', code:'MMTHE02', sem:4, credits:3, status:'open'},
+
+  // === SCHON BESTANDEN (laut Notenübersicht) ===
   {id:'done-1', name:'Artificial Intelligence', code:'DLMAIAI01', sem:1, credits:5, status:'passed'},
   {id:'done-2', name:'Programming with Python', code:'DLMDSPWP01', sem:1, credits:5, status:'passed'},
   {id:'done-3', name:'Advanced Research Methods', code:'DLMARM01-01', sem:2, credits:5, status:'passed'},
   {id:'done-4', name:'Seminar: AI and Society', code:'DLMAISAIS01', sem:2, credits:5, status:'passed'},
   {id:'done-5', name:'NLP and LLM', code:'DLMMLNL01', sem:2, credits:5, status:'passed'},
-  {id:'done-6', name:'Corporate Governance', code:'DLMIGCR01-01_E', sem:2, credits:5, status:'passed'},
+  {id:'done-6', name:'Corporate Governance of IT, Compliance, and Law', code:'DLMIGCR01-01_E', sem:2, credits:5, status:'passed'},
   {id:'done-7', name:'Use Case and Evaluation', code:'DLMDSUCE01', sem:2, credits:5, status:'passed'},
-  
-  // === ZUKUNFT (noch nicht fällig) ===
-  {id:'future-1', name:'Machine Learning', code:'DLMDSML', sem:2, credits:5, status:'open'},
-  {id:'future-2', name:'Deep Learning', code:'DLMDSDL', sem:2, credits:5, status:'open'},
-  {id:'future-3', name:'Seminar: Current Topics in AI', code:'DLMAISCTAI01', sem:2, credits:5, status:'open'},
-  {id:'future-4', name:'Master Thesis', code:'MMTHE01', sem:4, credits:27, status:'open'},
-  {id:'future-5', name:'Colloquium', code:'MMTHE02', sem:4, credits:3, status:'open'}
 ];
 const SEED_CARDS = [
   {id:'s1', deck:'Machine Learning', front:'What is overfitting?', back:'Overfitting: Das Modell lernt das Rauschen der Trainingsdaten auswendig statt der zugrundeliegenden Struktur → schlechte Generalisierung auf neuen Daten.', box:1},
@@ -712,6 +754,314 @@ renderModules(); renderDashboard(); renderNoteSelect(); renderDecks(); nextCard(
     save(LS.n, notes);
     renderNoteSelect();
   })(); 
+    // ━━━ MC-Quiz: Self-Check-Fragen aller Units (English) mit deutschen Erklärungen ━━━
+  (() => {
+    const QUIZ = [
+      {u:1, q:"Which of the following statements is NOT equivalent to the others?",
+       o:["The function f(x) has a local maximum or minimum at x = a.","The tangent line of the graph of f at x = a is horizontal.","f′(a) = 0","The function f has a stationary point at x = a."], c:0,
+       w:"f′(a) = 0 ⟺ horizontale Tangente ⟺ stationärer Punkt — aber ein stationärer Punkt muss KEIN Extremum sein (Gegenbeispiel f(x) = x³ bei x = 0)."},
+      {u:1, q:"Consider a function f(x, y). The partial derivative of f with respect to x …",
+       o:["… is equal to the slope of the tangent plane at f(x, y) at a point (x, y).","… is independent of the value of y at a given point (x, y).","… is a function of a single variable.","… is computed by treating y as a constant and taking the derivative of f as if it were a function of a single variable."], c:3,
+       w:"Partielle Ableitung: alle anderen Variablen werden wie Konstanten behandelt — dann normal nach x ableiten."},
+      {u:2, q:"Suppose f is the probability distribution of the true temperature and g is the resolution function of a thermometer. Then the convolution f∗g …",
+       o:["… is skewed toward higher values if the thermometer tends to underestimate the true temperature.","… corresponds to a very narrow distribution when the thermometer has low resolution.","… is the probability distribution of the temperature measurements.","… is the temperature observed on the thermometer."], c:2,
+       w:"Messwert = wahrer Wert + Messfehler (unabhängig). Die Dichte der Summe unabhängiger Zufallsgrößen ist die Faltung f∗g [20]."},
+      {u:3, q:"Which of the following is a unit vector in the direction u = (1, 2, 2)?",
+       o:["v⃗ = (3, 6, −6)","v⃗ = (1/3)·(1, 2, 2)","v⃗ = (1, 1, −1)","v⃗ = −(1/3)·(1, 2, −2)"], c:1,
+       w:"|u| = √(1+4+4) = 3 → Einheitsvektor = u/|u| = (1/3)·(1, 2, 2) [19]."},
+      {u:3, q:"What is the angle between the vectors (0, 1) and (3, 4)?",
+       o:["cos(4/5) radians","approx. 0.644 radians","arccos 5 radians","approx. 0.693 radians"], c:1,
+       w:"cos θ = (u·v)/(|u||v|) = 4/5 → θ = arccos(0.8) ≈ 0.644 rad ≈ 36.9° [19]."},
+      {u:3, q:"Which of the following vectors is equal to the directed line segment from the point (0, 0) to the point (−2, −3)?",
+       o:["The directed line segment from the point (25, 4) to (23, 1).","The directed line segment from the point (−2, −3) to (0, 0).","The directed line segment from the point (0, 0) to (−1, −3/2).","The directed line segment from the point (0, 0) to (2, 3)."], c:0,
+       w:"Vektor = Ende − Start: (23−25, 1−4) = (−2, −3). Parallel mit gleichem Richtungssinn ist gleichwertig [19]."},
+      {u:4, q:"A vector field on ℝ² is given by F⃗(x, y) = y·i⃗ + x·j⃗. Which of the following is NOT a correct expression for the work done along the circle arc C given by r⃗(t) = cos(t)·i⃗ + sin(t)·j⃗, 0 < t < π/2?",
+       o:["∫₀^(π/2) (y(t)x′(t) + x(t)y′(t)) dt","∫₀^(π/2) (sin(t)·i⃗ + cos(t)·j⃗) dt","∫₀^(π/2) (−sin²(t) + cos²(t)) dt","∫_C F⃗ · dr⃗"], c:1,
+       w:"Arbeit ist ein SKALAR — Option b) ist ein Vektor-Integral und liefert einen Vektor, kann also keine Arbeit sein [18]."},
+      {u:4, q:"Which of the following is a real-world example of a scalar field?",
+       o:["The water depth at each point in a lake","The magnetic field surrounding a magnetic substance","The wind velocity at each point on the Earth's surface","The humidity and temperature at each point in a room"], c:0,
+       w:"Skalarfeld: Punkt ↦ EINE Zahl (Wassertiefe ✓). Magnetfeld/Wind = Vektorfelder; Temperatur + Feuchte zusammen = zwei Zahlen, kein Skalarfeld [18]."},
+      {u:4, q:"A vector field is given by V⃗(x, y) = x·i⃗. Which of the following is NOT equal to zero?",
+       o:["curl V⃗","V⃗(0, 5)","grad(V⃗(x, y) · j⃗)","div V⃗"], c:3,
+       w:"div V⃗ = ∂(x)/∂x = 1. Die anderen: curl = 0, V⃗(0,5) = 0⃗, grad(0) = 0 [18]."},
+      {u:5, q:"The matrix D = A·B + Cᵀ is a 3 × 4 matrix. Which of the following are possible dimensions for A, B and C?",
+       o:["A is 3 × 10,000, B is 10,000 × 4, C is 4 × 3","A is 3 × 3, B is 3 × 4, C is 3 × 4","A is 3 × 3, B is 4 × 4, C is 4 × 3","A is 4 × 3, B is 3 × 4, C is 4 × 3"], c:0,
+       w:"A·B: Spalten(A) = Zeilen(B) → (3×k)·(k×4) = 3×4 ✓. Cᵀ muss 3×4 sein → C ist 4×3. Nur a) erfüllt beides [17]."},
+      {u:5, q:"Which of the following matrices is NOT invertible?",
+       o:["A = [[0, 6], [2, 0]]","A = [[3, 0], [2, 4]]","A = [[3, −6], [2, 4]]","A = [[3, 6], [2, 4]]"], c:3,
+       w:"Invertierbar ⟺ det ≠ 0. d): det = 3·4 − 6·2 = 0 → singulär. (a: −12, b: 12, c: 24) [17]."},
+      {u:5, q:"What are the eigenvalues of the matrix A = [[−1, 4], [0, 5]]?",
+       o:["−1","−1 and 5","−1, 4 and 5","The matrix has no eigenvalues."], c:1,
+       w:"Dreiecks-Trick: Bei einer Dreiecksmatrix stehen die Eigenwerte in der Diagonale: p_A(λ) = (−1−λ)(5−λ) → λ = −1, 5 [17]."},
+      {u:6, q:"Assume that a country has a very high level of income inequality. Which of the following statements is true?",
+       o:["The Gini coefficient is close to 1.","The Lorenz curve is a straight line.","The Gini coefficient is much greater than 1.","The Gini coefficient is equal to 0."], c:0,
+       w:"G ≈ 1 = extreme Ungleichheit; gerade Lorenz-Kurve = perfekte Gleichheit (G = 0). Werte > 1 nur bei negativen Einkommen/Schulden [16]."},
+      {u:6, q:"For a coin toss, which of the following probabilities corresponds to the highest possible Shannon entropy?",
+       o:["p(head) = 10%","p(head) = 50%","p(head) = 90%","p(head) = 100%"], c:1,
+       w:"H(p) maximal ⟺ Gleichverteilung → faire Münze (H = 1 bit). Je extremer die Verteilung, desto kleiner die Entropie [16]."},
+      {u:6, q:"Which of the following statements is true?",
+       o:["The cross entropy H(p, q) is maximized when q = p.","The cross entropy has no use in model building because we do not know the true probability distributions.","The cross entropy can be used to measure how well a model describes the true probability distribution on an underlying set of variables.","Cross entropy is symmetric: H(p, q) = H(q, p)."], c:2,
+       w:"H(p,q) misst, wie gut Modell q die wahre Verteilung p beschreibt; minimal ⟺ q = p; NICHT symmetrisch [16]."},
+    ];
+    const list = el('quiz-list');
+    let answered = 0, correct = 0;
+    const stat = () => el('quiz-score').textContent = answered ? `${correct} / ${answered} richtig` : 'Noch nichts beantwortet';
+    const render = (filter) => {
+      answered = 0; correct = 0;
+      list.innerHTML = '';
+      QUIZ.filter(q => filter === 'all' || q.u === Number(filter)).forEach(q => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.marginBottom = '.8rem';
+        card.innerHTML = `<div style="display:flex;gap:.5rem;align-items:center"><span class="code">Unit ${q.u}</span><strong>${q.q}</strong></div>
+          <div class="qopts" style="display:flex;flex-direction:column;gap:.4rem;margin-top:.6rem"></div>
+          <p class="hint qwhy" style="display:none;margin:.6rem 0 0"></p>`;
+        const opts = card.querySelector('.qopts'), why = card.querySelector('.qwhy');
+        q.o.forEach((o, j) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = String.fromCharCode(97 + j) + ') ' + o;
+          b.style.cssText = 'text-align:left;padding:.5rem .7rem;cursor:pointer;font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--border);border-radius:8px';
+          b.addEventListener('click', () => {
+            if (card.dataset.done) return;
+            card.dataset.done = '1';
+            answered++;
+            [...opts.children].forEach((btn, k) => {
+              btn.disabled = true;
+              if (k === q.c) { btn.style.borderColor = 'var(--ok)'; btn.style.color = 'var(--ok)'; }
+            });
+            if (j !== q.c) { b.style.borderColor = 'var(--bad)'; b.style.color = 'var(--bad)'; }
+            else correct++;
+            why.style.display = 'block';
+            why.textContent = (j === q.c ? '✅ Richtig! ' : '❌ Falsch. ') + q.w;
+            stat();
+          });
+          opts.appendChild(b);
+        });
+        list.appendChild(card);
+      });
+      stat();
+    };
+    el('quizFilter').addEventListener('change', e => render(e.target.value));
+    el('quizReset').addEventListener('click', () => render(el('quizFilter').value));
+    render('all');
+  })();
+    // ━━━ Formelsammlung: Alle 6 Units, zweisprachig ━━━
+  (() => {
+    const UNITS = [
+      {
+        title: "Unit 1 · Calculus",
+        color: "#7c5cff",
+        groups: [
+          {label: "Ableitungsregeln (differentiation)", items: [
+            {f: "Produktregel (product rule):\n(u·v)′ = u′·v + u·v′", tip: "Wenn du ein PRODUKT zweier Funktionen ableitest."},
+            {f: "Quotientenregel (quotient rule):\n(u/v)′ = (u′·v − u·v′) / v²", tip: "Wenn du einen BRUCH ableitest."},
+            {f: "Kettenregel (chain rule):\nf(x) = u(v(x))  ⟹  f′(x) = u′(v(x)) · v′(x)", tip: "INNERN FUNKTION ABLEITEN und mit äußerer Ableitung multiplizieren."},
+            {f: "Wichtige Ableitungen:\nxⁿ → n·xⁿ⁻¹        eˣ → eˣ        ln x → 1/x\nsin x → cos x    cos x → −sin x    tan x → 1/cos²x", tip: "Die müssen SIEBEN bis ZWANZIG sitzen — kommen in fast jeder Unit vor."}
+          ]},
+          {label: "Stationspunkte (stationary points / extrema)", items: [
+            {f: "Notwendige Bedingung (necessary):\nf′(a) = 0", tip: "Nur wenn f′(a)=0 KANN an a ein Extremum liegen."},
+            {f: "Hinreichende Bedingung (sufficient):\nf′(a) = 0 und f″(a) < 0  →  lokales Maximum\nf′(a) = 0 und f″(a) > 0  →  lokales Minimum", tip: "Das 2. Zeichen entscheidet: negativ = Max, positiv = Min."}
+          ]},
+          {label: "Integration (ein-dimensional)", items: [
+            {f: "Hauptsatz der Analysis (fundamental theorem):\n∫ₐᵇ f(x) dx = F(x) |ₐᵇ = F(b) − F(a)\nd/dx ∫ₐˣ f(u) du = f(x)", tip: "Bestimmt Integral = Stammfunktion an Grenzen ausrechnen."},
+            {f: "Partielle Integration (integration by parts):\n∫ f·g′ dx = f·g − ∫ f′·g dx", tip: "PRODUKT-Typ: z.B. x·sin x, x·eˣ. Merkhilfe: 'u' wird abgeleitet, 'v' integriert."},
+            {f: "Substitution (u-Substitution):\n∫ f(u(x))·u′(x) dx = ∫ f(u) du", tip: "KENNST DU die innere Funktion UND ihre Ableitung? Dann Substitution! Beispiel: ∫₀^(π/2) e^(sin x)·cos x dx = e−1"}
+          ]},
+          {label: "Partielle Ableitungen & Mehrfachintegrale", items: [
+            {f: "Partielle Ableitung (partial derivative):\n∂f/∂x: nach x ableiten, alle anderen Variablen wie KONSTANTEN\n\nBeispiel: g(x,y) = sin(xy² + x)\n∂g/∂x = (y²+1)·cos(xy²+x)\n∂g/∂y = 2xy·cos(xy²+x)", tip: "Bei MC-Fragen: 'treating the other variable as a constant' ist die richtige Antwort."},
+            {f: "Doppelintegral (double integral):\n∬_R f(x,y) dA = ∫ ∫ f(x,y) dx dy  (verschachtelt)", tip: "SKIZZIERE zuerst den Bereich R! Innen-Integration: Stammfunktion, dann Grenzen einsetzen."}
+          ]},
+          {label: "Taylor-Reihe (Taylor series)", items: [
+            {f: "Taylor-Polynom n-ter Ordnung um x₀:\nTₙf(x) = Σₖ₌₀ⁿ [f⁽ᵏ⁾(x₀)/k!] · (x − x₀)ᵏ\n\nBeispiel: sin(x) um 0:\nsin x ≈ x − x³/6 + x⁵/120", tip: "Systematisch: f(0), f′(0), f″(0), … berechnen, einsetzen, Faktoriale nicht vergessen!"}
+          ]}
+        ]
+      },
+      {
+        title: "Unit 2 · Integral Transformations",
+        color: "#22d3ee",
+        groups: [
+          {label: "Faltung (convolution)", items: [
+            {f: "Kontinuierliche Faltung (continuous convolution):\n(f ∗ g)(z) = ∫₋∞^∞ f(x)·g(z−x) dx", tip: "X, Y unabhängig mit Dichten f, g ⟹ X+Y hat Dichte f∗g."},
+            {f: "Faltung ist kommutativ (commutative):\nf ∗ g = g ∗ f", tip: "Beweis: Substitution y = z − x."},
+            {f: "Diskrete Faltung (image processing):\n(K ∗ f)(x,y) = Σᵢ Σⱼ K(i,j)·f(x−i, y−j)", tip: "Kernel auf Pixel-Positionen legen und gewichtet addieren. Gauß-Kernel = Glättung."},
+            {f: "Beispiel: Exponential-Verteilung (Rate λ):\nfλ(t) = λe^(−λt) für t ≥ 0\n(fλ ∗ fλ)(t) = λ²·t·e^(−λt) für t ≥ 0", tip: "Wartezeit bis zum 2. Ereignis = Faltung zweier Exponential-Dichten."}
+          ]},
+          {label: "Komplexe Zahlen (complex numbers)", items: [
+            {f: "Modulus (Betrag) & konjugierte Zahl:\n|z| = √(x² + y²)\nz̄ = x − yi\nz·z̄ = |z|²", tip: "z·z̄ = |z|² ist der Trick bei Division komplexer Zahlen."},
+            {f: "Euler-Formel & Polarform:\ne^(iφ) = cos φ + i·sin φ\nz = r·e^(iφ)", tip: "Die BRÜCKE in die Fourier-Welt! Wichtig für die MC-Frage 'Why is Euler's formula important?'"}
+          ]},
+          {label: "Fourier-Reihe (Fourier series)", items: [
+            {f: "Reelle Fourier-Reihe (f ist L-periodisch):\nf(t) = a₀/2 + Σₙ (aₙ·cos(ωₙt) + bₙ·sin(ωₙt))\nωₙ = 2πn/L\n\nKomplexe Form:\nf(t) = Σₙ cₙ·e^(iωₙt)", tip: "FUNKTION MUSS PERIODISCH sein. Frequenzen sind diskret (ωₙ)."},
+            {f: "Komplexe Koeffizienten (complex coefficients):\ncₙ = (1/L)·∫₋L/2^(L/2) f(t)·e^(−iωₙt) dt", tip: "Für L = 2π: cₙ = (1/2π)·∫₋π^π f(t)·e^(−int) dt"}
+          ]},
+          {label: "Fourier-Transformation (Fourier transform)", items: [
+            {f: "Vergleich Reihe vs. Transformation:\nReihe:    f muss L-periodisch sein | diskrete ωₙ | Gewichte cₙ\nTransf.:  f NICHT periodisch      | kontin. ω    | Gewicht f̃(ω)", tip: "Diese Gegenüberstellung kommt fast sicher in der MC-Frage vor!"},
+            {f: "Fourier-Transform (forward, Kurs-Konvention):\nf̃(ω) = (1/√(2π))·∫₋∞^∞ f(t)·e^(−iωt) dt\nRücktransformation (inverse):\nf(t) = (1/√(2π))·∫₋∞^∞ f̃(ω)·e^(+iωt) dω", tip: "Vorzeichen: forward hat e^(−iωt), inverse hat e^(+iωt)."},
+            {f: "Beispiele (auswendig lernen):\n1) Rechteckpuls f(t) = 1/2 für |t|≤1:\n   f̃(0) = 1/√(2π), f̃(ω) = (1/√(2π))·sin(ω)/ω (si-Funktion)\n2) fλ(t) = e^(−λ|t|):\n   f̃λ(ω) = √(2/π)·λ/(ω²+λ²)\n3) Gauß fσ(t) = (1/√(2πσ²))·exp(−t²/2σ²):\n   f̃σ(ω) = (1/√(2π))·exp(−σ²ω²/2)   → Gausss bleibt Gausss!", tip: "Gauß→Gauß + si-Funktion sind die häufigsten Prüfungsbeispiele."}
+          ]}
+        ]
+      },
+      {
+        title: "Unit 3 · Vector Algebra",
+        color: "#34d399",
+        groups: [
+          {label: "Grundlagen (basics)", items: [
+            {f: "Betrag (magnitude/length) & Einheitsvektor (unit vector):\n|u| = √(u₁² + … + uₙ²)\nû = u/|u|    (Länge 1, Richtung von u)", tip: "Einheitsvektor = Richtung ohne Länge. u = |u|·û"}
+          ]},
+          {label: "Lineare Unabhängigkeit & Basen (basis)", items: [
+            {f: "n Vektoren v₁,…,vₙ in ℝⁿ — Folgendes ist ÄQUIVALENT:\n• v₁,…,vₙ sind eine Basis von ℝⁿ\n• v₁,…,vₙ sind linear unabhängig\n• det(v₁,…,vₙ) ≠ 0", tip: "Das det-Kriterium ist der schnellste Prüfungs-Check! Jede Basis von ℝⁿ hat genau n Vektoren."}
+          ]},
+          {label: "Skalarprodukt (scalar/dot product)", items: [
+            {f: "Koordinatenform:\nu·v = Σᵢ uᵢ·vᵢ\nGeometrisch:\nu·v = |u|·|v|·cos θ\n⟹ cos θ = (u·v)/(|u|·|v|)", tip: "Winkel zwischen Vektoren: Skalarprodukt durch Produkt der Beträge, dann arccos."},
+            {f: "Orthogonalität:\nu·v = 0  ⟺  u ⊥ v", tip: "Skalarprodukt = 0 bedeutet senkrecht (bei Vektoren ≠ 0)."},
+            {f: "Projektion (projection) von v auf u:\nProj_u(v) = (u·v / |u|²)·u   (als Vektor)\nProjektionslänge = |v|·cos θ = (u·v)/|u|", tip: "Beispiel: u=(−1,−2,2), v=(0,3,4) → cos θ = 2/15 → θ ≈ 82.3°"}
+          ]},
+          {label: "Kreuzprodukt (cross product, nur ℝ³)", items: [
+            {f: "u × v = (u₂v₃−u₃v₂,  u₃v₁−u₁v₃,  u₁v₂−u₂v₁)\n\nDeterminanten-Merkformel:\nu×v = det[ e₁  u₁  v₁ ;  e₂  u₂  v₂ ;  e₃  u₃  v₃ ]", tip: "Mit der Determinanten-Formel merkst du die Komponenten leichter."},
+            {f: "Eigenschaften:\nu×v ⊥ u  und  u×v ⊥ v\n|u×v| = |u|·|v|·sin θ  =  Fläche des Parallelogramms\nu×v = −v×u   (anti-kommutativ)\nu×u = 0", tip: "Fläche Parallelogramm = |u×v|, Fläche Dreieck = ½|u×v|"}
+          ]}
+        ]
+      },
+      {
+        title: "Unit 4 · Vector Calculus",
+        color: "#fbbf24",
+        groups: [
+          {label: "Vektorwertige Funktionen (vector-valued functions)", items: [
+            {f: "Komponentenweise ableiten/integrieren:\nr(t) = (x(t), y(t), z(t))\nv(t) = r′(t) = (x′, y′, z′)   (Geschwindigkeit)\na(t) = v′(t) = (x″, y″, z″)   (Beschleunigung)", tip: "Nur komponentenweise — keine neuen Regeln!"},
+            {f: "Kreisbewegung mit konstanter Geschwindigkeit:\nv ⊥ r   (Geschwindigkeit senkrecht zur Position)\na ⊥ v   (Beschleunigung senkrecht zur Geschwindigkeit)", tip: "Diese zwei Orthogonalitäten sind die typische MC-Frage."},
+            {f: "Strecke von a nach b parametrisieren:\nr(t) = a + t·(b−a),  t ∈ [0,1]", tip: "Bei Polygonzügen: jede Strecke einzeln parametrisieren und integrieren, dann summieren."}
+          ]},
+          {label: "Wegintegral / Arbeit (path integral / work)", items: [
+            {f: "Arbeit (work) entlang eines Wegs C:\nW = ∫_C F·dr = ∫ₐᵇ F(r(t))·r′(t) dt\n\nREZEPT:\n① Weg parametrisieren: r(t), t∈[a,b]\n② r′(t) berechnen\n③ F(r(t)) berechnen\n④ Skalarprodukt F·r′ integrieren", tip: "Arbeit ist ein SKALAR! Ein Vektor-Integral kann nie Arbeit sein (MC-Falle)."},
+            {f: "Beispiel (Kreisbogen):\nr(t) = (cos t, sin t), F(x,y) = (y, x)\nW = ∫₀^(π/2) [sin t·(−sin t) + cos t·cos t] dt\n  = ∫₀^(π/2) (−sin²t + cos²t) dt", tip: "Ergibt 0 wegen der Symmetrie auf [0, π/2]."}
+          ]},
+          {label: "Skalarfelder & Vektorfelder (fields)", items: [
+            {f: "Skalarfeld (scalar field):\nℝⁿ ⊇ A  ∋  r ↦ φ(r) ∈ ℝ\nBeispiele: Temperatur, Druck, Wassertiefe\n\nVektorfeld (vector field):\nℝⁿ ⊇ A  ∋  r ↦ F(r) ∈ ℝⁿ\nBeispiele: Wind, Magnetfeld", tip: "MC-Falle: 'humidity AND temperature' sind ZWEI Skalarfelder — das PAAR ist KEIN Skalarfeld!"},
+            {f: "Wind: Richtung & Stärke:\nRichtung = F̂ (normalisiertes Feld)\nStärke = |F|", tip: "Windgeschwindigkeit 0 ⟺ F = 0⃗ (Nullvektor)."}
+          ]},
+          {label: "Nabla-Operator (∇)", items: [
+            {f: "Nabla in kartesischen Koordinaten:\n∇ = ( ∂/∂x , ∂/∂y , ∂/∂z )", tip: "Der Master-Key für Gradient, Divergenz und Curl."},
+            {f: "Gradient (on a SCALAR field):\n∇φ = ( ∂φ/∂x , ∂φ/∂y , ∂φ/∂z )\nBedeutung: Richtung & Rate des STEILSTEN ANSTIEGS von φ", tip: "Beispiel: φ = 1/√(x²+y²+z²) → ∇φ = −(x,y,z)/(x²+y²+z²)^(3/2)"},
+            {f: "Divergenz (on a VECTOR field):\n∇·F = ∂Fx/∂x + ∂Fy/∂y + ∂Fz/∂z\nBedeutung: Netto-Zufluss (+) / Abfluss (−) an einem Punkt", tip: "div > 0 = Quelle, div < 0 = Senke, div = 0 = weder noch."},
+            {f: "Curl / Rotation (on a VECTOR field):\n∇×F = ( ∂Fz/∂y − ∂Fy/∂z ,  ∂Fx/∂z − ∂Fz/∂x ,  ∂Fy/∂x − ∂Fx/∂y )\nBedeutung: Wirbelstärke / Rotation des Feldes", tip: "Beispiel: V(x,y) = x·i → curl V = 0, div V = 1 (das war die MC-Frage!)"}
+          ]},
+          {label: "Konservative Felder (conservative fields)", items: [
+            {f: "F konservativ  ⟺  F = ∇φ  für ein Skalarfeld φ\nkonservativ  ⟹  ∇×F = 0  (wirbelfrei)\nUmkehrung gilt bei einfach zusammenhängendem Gebiet.", tip: "Gravitationsfeld ist konservativ: ∇×g = 0⃗"},
+            {f: "Konservativ ⟹ Wegintegral WEGUNABHÄNGIG:\n∫_C F·dr = φ(r(b)) − φ(r(a))", tip: "Nur Start- und Endpunkt zählen, nicht der Weg (Energieerhaltung)."}
+          ]}
+        ]
+      },
+      {
+        title: "Unit 5 · Matrices and Vector Spaces",
+        color: "#f87171",
+        groups: [
+          {label: "Matrix-Multiplikation (matrix multiplication)", items: [
+            {f: "Definiert wenn: Spalten(A) = Zeilen(B)\nA ∈ ℝ^(n×l), B ∈ ℝ^(l×m)  ⟹  C = AB ∈ ℝ^(n×m)\ncᵢⱼ = Σₖ aᵢₖ·bₖⱼ   ('Zeile mal Spalte')", tip: "Im Allgemeinen AB ≠ BA! Dimensions-Check zuerst."},
+            {f: "LGS kompakt (system of linear equations):\nA·x = b", tip: "Spalten von A + Vektor b = die Koeffizienten deiner Gleichungen."},
+            {f: "Transponierte (transpose):\n(AB)ᵀ = Bᵀ·Aᵀ\nu·v = uᵀ·v  (Skalarprodukt als Matrixprodukt)", tip: "Die Reihenfolge WECHSELT bei der Transponierten!"}
+          ]},
+          {label: "Gauß-Algorithmus (Gauss algorithm)", items: [
+            {f: "3 elementare Zeilenoperationen (row operations):\n① Zwei Zeilen TAUSCHEN\n② Eine Zeile mit c ≠ 0 MULTIPLIZIEREN\n③ EINEM ZEILE ein Vielfaches anderer ZUADDIEREN", tip: "Lösungsmenge bleibt bei allen 3 Operationen UNVERÄNDERT."},
+            {f: "Zeilenstufenform (row echelon form):\n1) Pivot jeder Zeile liegt RECHTS der Pivots darüber\n2) Null-Zeilen ganz UNTEN", tip: "Pivot = linksste nicht-null Element der Zeile."},
+            {f: "Die 3 Lösungsfälle:\n• Zeile '0 … 0 | c' mit c ≠ 0  →  KEINE Lösung\n• Pivot für jede Variable          →  EINDEUTIGE Lösung\n• Variable OHNE Pivot             →  UNENDLICH VIELE Lösungen\n  (freie Variable: x₃ = t, back substitution)", tip: "Das ist DAS Kern-Konzept der Unit — kommt fast sicher in der Klausur vor."}
+          ]},
+          {label: "Determinante (determinant)", items: [
+            {f: "2×2:\ndet[ a  b ]  =  a·d − b·c\n    [ c  d ]", tip: "Diagonal-Produkt minus Neben-Diagonal-Produkt."},
+            {f: "3×3 (Sarrus-Regel):\ndet A = a₁₁a₂₂a₃₃ + a₁₂a₂₃a₃₁ + a₁₃a₂₁a₃₂\n        − a₁₃a₂₂a₃₁ − a₁₁a₂₃a₃₂ − a₁₂a₂₁a₃₃", tip: "Drei 'abwärts' minus drei 'aufwärts' Diagonalen."},
+            {f: "Laplace-Entwicklung (jede Zeile oder Spalte):\ndet A = Σⱼ (−1)^(i+j)·aᵢⱼ·Mᵢⱼ\nMᵢⱼ = Minor = det der Streichmatrix (Zeile i, Spalte j streichen)", tip: "Am besten nach der Zeile/Spalte mit den meisten NULLEN entwickeln — spart Arbeit!"}
+          ]},
+          {label: "Inverse Matrix (inverse)", items: [
+            {f: "A invertierbar  ⟺  det A ≠ 0\nA⁻¹ = (1/det A)·Cᵀ\nCᵢⱼ = Cofaktor = (−1)^(i+j)·Mᵢⱼ\n\nAnwendung: Ax = b  ⟹  x = A⁻¹·b (eindeutig)", tip: "Cofaktor = Minor × Vorzeichen-Schachbrett. Dann transponieren und durch det teilen."}
+          ]},
+          {label: "Eigenwerte & Eigenvektoren (eigenvalues & eigenvectors)", items: [
+            {f: "Definition:\nAx = λx  mit x ≠ 0\n⟺ (A − λI)·x = 0", tip: "Eigenvektor bleibt in Richtung UNVERÄNDERT, wird nur gestreckt (λ) oder gespiegelt."},
+            {f: "Charakteristisches Polynom (characteristic polynomial):\np_A(λ) = det(A − λI) = 0\nEigenwerte = NULLSTELLEN von p_A(λ)", tip: "TRICK: Bei einer Dreiecksmatrix (oberes/unteres) stehen die Eigenwerte direkt in der DIAGONALE!"},
+            {f: "Multiplizitäten:\ngeometrische Multiplizität = # linear unabhängiger Eigenvektoren zu λ\nalgebraische Multiplizität = Potenz von (λ−λᵢ) in p_A(λ)\n\n1 ≤ geo ≤ alg ≤ n", tip: "Beispiel: [[1,1],[0,1]] → λ=1 (alg. 2), aber nur EIN Eigenvektor (geo. 1) → NICHT diagonalisierbar."}
+          ]},
+          {label: "Diagonalisierung (diagonalization)", items: [
+            {f: "Bedingung: n linear unabhängige Eigenvektoren\nS⁻¹·A·S = D\nD = diag(λ₁, …, λₙ)   (Eigenwerte in der Diagonale)\nS = [x₁ | x₂ | … | xₙ]  (Eigenvektoren als SPALTEN)", tip: "Spalten von S = Eigenvektoren — Reihenfolge muss zu D passen!"},
+            {f: "Anwendung — Matrixpotenzen:\nAᵏ = S·Dᵏ·S⁻¹   mit Dᵏ = diag(λ₁ᵏ, …, λₙᵏ)", tip: "Ohne Diagonalisierung: Aᵏ per Multiplikation. Mit: nur Potenzen der Diagonale — trivial!"},
+            {f: "Beispiele (aus dem Kurs):\nA = [[−1,6],[−1,4]] → λ = 2,1 → diagonalisierbar\nS = [[2,3],[1,1]],  D = diag(2,1)\n\nA = [[1,1],[0,1]] → NUR 1 Eigenvektor → NICHT diagonalisierbar", tip: "Diagonalisierbar ≠ Invertierbar und umgekehrt! (Transfer-Task-Frage)"}
+          ]},
+          {label: "Tensoren (tensors)", items: [
+            {f: "Ränge (ranks):\nRang 0: Skalar (z.B. Temperatur, Masse)\nRang 1: Vektor (z.B. Position, Kraft)\nRang 2: Matrix (z.B. Trägheitstensor)\nRang 3: Triade (gᵢⱼₖ)", tip: "Tensoren generalisieren Skalar → Vektor → Matrix → …"},
+            {f: "Dyadisches Produkt (dyadic product):\n(x⊗y)ᵢⱼ = xᵢ·yⱼ\nx⊗y = x·yᵀ  (Vektor mal transponierter Vektor = Matrix)", tip: "Rang 1 ⊗ Rang 1 = Rang 2. Beispiel: (1,2,3)ᵀ⊗(4,5,6)ᵀ = [[4,5,6],[8,10,12],[12,15,18]]"}
+          ]}
+        ]
+      },
+      {
+        title: "Unit 6 · Information Theory",
+        color: "#a78bfa",
+        groups: [
+          {label: "Lineare Regression & MSE", items: [
+            {f: "MSE (mean squared error):\nMSE = (1/N)·Σ (ŷᵢ − yᵢ)²\n\nRegression: β̂₁ = Cov(x,y)/Var(x)\nβ̂₀ = ȳ − β̂₁·x̄", tip: "MSE minimal halten. β̂₁ = empirische Kovarianz / empirische Varianz. Beispiel: (0;0.7),(1;1.1),(2;1.7) → β̂₁=1/2, β̂₀=2/3, MSE=1/450"}
+          ]},
+          {label: "Gini-Index (income inequality)", items: [
+            {f: "Gini-Index über die Lorenz-Kurve:\nG = A / (A + B)\nA = Fläche zwischen Gleichheitsgerade und Lorenz-Kurve\nB = Fläche unter der Lorenz-Kurve\n\nG = 0 → perfekte Gleichheit\nG ≈ 1 → extreme Ungleichheit", tip: "G kann NIE > 1 sein (außer bei negativen Einkommen). Beispiel Deutschland 2019: G ≈ 29.7%"},
+            {f: "Berechnung von B:\nDiskret: B = Summe der Trapeze unter der Lorenz-Kurve\nKontinuierlich: B = ∫₀¹ f(x) dx\nA = 0.5 − B,  G = A/0.5 = 2A", tip: "Beispiel f(x)=x⁴: B = 1/5 = 0.2 → A = 0.3 → G = 0.3/0.5 = 0.6"}
+          ]},
+          {label: "Gini-Impurity (decision trees)", items: [
+            {f: "G(p) = 1 − Σᵢ p(xᵢ)²\nInterpretation: Wahrscheinlichkeit, dass zwei UNABHÄNGIGE Züge\nVERSCHIEDENE Klassen haben.", tip: "G(p) = 0 ⟺ p degeneriert (eine Klasse sicher); maximal bei Gleichverteilung. Kleine G = hohe Trennschärfe."}
+          ]},
+          {label: "Shannon-Entropie (Shannon entropy)", items: [
+            {f: "Informationsgehalt eines Ergebnisses:\nI(xᵢ) = −log₂ p(xᵢ)\n\nShannon-Entropie (mittlerer Informationsgehalt):\nH(p) = −Σᵢ p(xᵢ)·log₂ p(xᵢ)", tip: "Seltenes Ereignis = hoher Informationsgehalt, sicheres = 0."},
+            {f: "Eigenschaften:\nH(p) ≥ 0\nH(p) = 0  ⟺  p degeneriert (ein Ergebnis sicher)\nH(p) maximal  ⟺  p Gleichverteilung (pᵢ = 1/n)\n\nBeispiele:\nFaire Münze (½/½): H = 1\nMünze 3:1 (¾/¼): H ≈ 0.811", tip: "H(p) = maximaler Wert bei fairer Münze — das war die MC-Frage!"}
+          ]},
+          {label: "Shannon's Quellencodierung (source coding)", items: [
+            {f: "Quellencodierungstheorem:\nH(p) ≤ E(L) < H(p) + 1\nE(L) = Σᵢ p(xᵢ)·ℓ(xᵢ)  (mittlere Bitlänge)", tip: "Entropie = minimaler Speicherbedarf verlustfreier Kompression. Huffman-Beispiel: E(L)=1.9, H≈1.846 ✓"},
+            {f: "Beispiel Huffman-Code:\np(a)=0.4, p(b)=0.3, p(c)=0.2, p(d)=0.1\nLängen: a→1, b→2, c→3, d→3\nE(L) = 0.4·1 + 0.3·2 + 0.2·3 + 0.1·3 = 1.9", tip: "Häufige Zeichen = kurze Codes, seltene = lange."}
+          ]},
+          {label: "Cross-Entropie & KL-Divergenz (cross-entropy & KL)", items: [
+            {f: "Cross-Entropie:\nH(p,q) = −Σᵢ p(xᵢ)·log₂ q(xᵢ)\nBedeutung: mittlerer Informationsgehalt von q, bewertet unter der WAHREN Verteilung p.\n= Speicherbedarf, wenn man q annimmt, aber p gilt.", tip: "p = 'true distribution', q = 'estimated distribution'. MINIMAL bei q = p (dann H = H(p))."},
+            {f: "KL-Divergenz (Kullback-Leibler):\nD_KL(p‖q) = Σᵢ p(xᵢ)·log₂( p(xᵢ)/q(xᵢ) )\n\nZerlegung (SEHR WICHTIG):\nH(p,q) = H(p) + D_KL(p‖q)", tip: "Cross-Entropy = eigene Unsicherheit (H(p)) + Fehlanpassung (D_KL)."},
+            {f: "Eigenschaften:\nD_KL(p‖q) ≥ 0\nD_KL(p‖q) = 0  ⟺  p = q\nNicht symmetrisch: D_KL(p‖q) ≠ D_KL(q‖p)\nH(p,q) ≠ H(q,p)", tip: "KL ist KEINE Distanz (keine Symmetrie, kein Dreiecks-ungleichung)."},
+            {f: "Beispiel Krebsdiagnose:\nWahr: p = (S,H) sicher  →  p(S,H) = 1\nModell: q(S,H) = 0.9·0.8 = 0.72\nH(p,q) = −1·log₂(0.72) ≈ 0.474 bits", tip: "Wenn p = One-Hot, entfallen alle Terme mit p=0: H = −log₂ q(wahre Klasse)."}
+          ]},
+          {label: "ROC-Kurve & AUC", items: [
+            {f: "Confusion Matrix (binäre Klassifikation):\n        Y=1 (Pos)   Y=0 (Neg)\nŶ=1     TP          FP   (Fehler 1. Art)\nŶ=0     FN          TN   (Fehler 2. Art)", tip: "TP: korrekt positiv, FN: verpasst, FP: Fehlalarm, TN: korrekt negativ."},
+            {f: "Schwellenwert τ:\nŶ = 1  wenn Score X > τ,  sonst 0\nTPR(τ) = P(X>τ | Y=1)   (True Positive Rate)\nFPR(τ) = P(X>τ | Y=0)   (False Positive Rate)", tip: "ROC-Kurve: TPR gegen FPR, gezeichnet über ALLE möglichen τ."},
+            {f: "AUC (Area Under the Curve):\nPerfekter Klassifikator: AUC = 1\nZufalls-Klassifikator:   AUC = 0.5", tip: "AUC = zusammengefasste Performance-Metrik. Je näher an 1, desto besser."}
+          ]}
+        ]
+      }
+    ];
+
+    const TIPS = [
+      "🎯 Dreiecksmatrix → Eigenwerte = Diagonale (spart das ganze charakteristische Polynom!) [Unit 5]",
+      "🎯 Determinante: nach Zeile/Spalte mit NULLEN entwickeln (Laplace) — spart halbe Rechnung [Unit 5]",
+      "🎯 Partielle Integration: 'LIATE'-Reihenfolge (Log, Inverse Trig, Algebra, Trig, Exponential) [Unit 1]",
+      "🎯 Substitution: suchst du 'innere Funktion + ihre Ableitung'? → Substitution [Unit 1]",
+      "🎯 Doppelintegrale: Bereich SKIZZIEREN, Innen-Integration zuerst [Unit 1]",
+      "🎯 Fourier-Koeffizient c₀ = Mittelwert über eine Periode [Unit 2]",
+      "🎯 Faltung mit Exponential: 'shift trick' — e^(−λx)·e^(−λ(t−x)) = e^(−λt), t kommt raus [Unit 2]",
+      "🎯 Gini: B per Trapez-Summe oder Integral, A = 0.5 − B, G = A/0.5 [Unit 6]",
+      "🎯 Cross-Entropy mit One-Hot p: H = −log₂ q(wahre Klasse) — alle anderen Terme = 0 [Unit 6]",
+      "🎯 KL-Zerlegung: H(p,q) = H(p) + D_KL(p‖q) — die wichtigste Verbindung in Unit 6 [Unit 6]",
+      "🎯 MC-Prüfung: 'NOT/least/always'-Wörter DOPPELT lesen, Extremantworten ausschließen [Alle Units]"
+    ];
+
+    const list = el('formulas-list');
+    list.innerHTML = UNITS.map(u => `
+      <div class="card" style="margin-bottom:1rem;border-left:4px solid ${u.color}">
+        <h3 style="margin:0 0 .5rem;color:${u.color}">${u.title}</h3>
+        ${u.groups.map(g => `
+          <div class="fm-label">${g.label}</div>
+          <div class="fm-grid">
+          ${g.items.map(it => `
+            <div style="grid-column:1/-1">
+              <div class="fm">${it.f}</div>
+              <div style="color:var(--ok);font-size:.82rem;margin-bottom:.3rem">💡 ${it.tip}</div>
+            </div>`).join('')}
+          </div>`).join('')}
+      </div>`).join('') + `
+      <div class="card" style="border-left:4px solid var(--accent);margin-bottom:1rem">
+        <h3 style="margin:0;color:var(--accent)">⚡ Die 10 wichtigsten Rechen-Tricks (Exam-Taktik)</h3>
+        <ol style="margin:.5rem 0 0;padding-left:1.3rem;font-size:.92rem">
+          ${TIPS.map(t => `<li>${t}</li>`).join('')}
+        </ol>
+      </div>`;
+  })();
 </script>
 </body>
 </html>
