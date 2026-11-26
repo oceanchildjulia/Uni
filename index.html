@@ -70,10 +70,14 @@ button.primary:hover{filter:brightness(1.12)}
 <header>
   <h1>🧠 AI Study Hub <span class="hint">· M.Sc. Artificial Intelligence</span></h1>
   <nav>
+  
     <button data-tab="dashboard" class="active">📊 Dashboard</button>
     <button data-tab="modules">📚 Module</button>
     <button data-tab="flashcards">⚡ Flashcards (EN)</button>
     <button data-tab="notes">📝 Notizen (DE)</button>
+	<button data-tab="notes">📝 Notizen (DE)</button>
+	<button data-tab="exam">🎯 Exam Prep</button>
+
   </nav>
 </header>
 
@@ -165,26 +169,144 @@ button.primary:hover{filter:brightness(1.12)}
     <p class="hint">✨ Wird automatisch gespeichert.</p>
   </div>
 </section>
+<!-- ================= EXAM PREP ================= -->
+<section id="tab-exam">
+  <h2>🎯 Exam Prep <span class="hint">– Learning Sprint Session 7 · 7 Review-Aufgaben, gelöst</span></h2>
+  <div class="card">
+    <p style="margin-top:0">💡 <strong>So nutzt du es:</strong> Erst <u>selbst</u> rechnen (Papier!), dann Lösung aufklappen und Schritt für Schritt vergleichen. Jede Aufgabe zeigt dir, welche Unit/Regel dahintersteckt — so verknüpfst du Prüfung mit Verständnis.</p>
+  </div>
 
+  <!-- TASK 1 -->
+  <details class="card" style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Task 1 · Integrale (a)–(d) <span class="hint">[U1 Calculus, U4 Vector Calculus]</span></summary>
+    <div style="margin-top:.8rem">
+      <p><strong>(a)</strong> ∫₀^∞ x·e^(−x) dx — Partielle Integration (u = x, dv = e^(−x)dx):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">= [−x·e^(−x)]₀^∞ + ∫₀^∞ e^(−x) dx
+= 0 + [−e^(−x)]₀^∞ = 0 + (0 − (−1)) = 1</pre>
+      <p><strong>(b)</strong> ∫₀^π sin(x)·cos²(x) dx — Substitution u = cos(x), du = −sin(x)dx, Grenzen 1 → −1:</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">= ∫₁^(−1) −u² du = ∫₋₁¹ u² du = [u³/3]₋₁¹ = 1/3 − (−1/3) = 2/3</pre>
+      <p><strong>(c)</strong> ∬_T x·y dA, T = Dreieck (0,0), (1,0), (0,1) → 0 ≤ x ≤ 1, 0 ≤ y ≤ 1−x:</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">∫₀¹ ∫₀^(1−x) x·y dy dx
+= ∫₀¹ x · [y²/2]₀^(1−x) dx
+= ∫₀¹ (x/2)(1−x)² dx
+= (1/2) ∫₀¹ (x − 2x² + x³) dx
+= (1/2)(1/2 − 2/3 + 1/4) = (1/2)(1/12) = 1/24</pre>
+      <p><strong>(d)</strong> ∫_C F⃗·dr⃗ mit F⃗ = (1, x+y), r⃗(t) = (sin t, t), t ∈ [0, π]. r⃗′(t) = (cos t, 1):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">F(r(t))·r'(t) = (1, sin t + t)·(cos t, 1) = cos t + sin t + t
+∫₀^π (cos t + sin t + t) dt = [sin t − cos t + t²/2]₀^π
+= (0 − (−1) + π²/2) − (0 − 1 + 0) = 2 + π²/2 ≈ 6.93</pre>
+    </div>
+  </details>
+
+  <!-- TASK 2 -->
+  <details class="card" style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Task 2 · sin²(x): Taylor + Fourier-Koeffizient c₀ <span class="hint">[U1, U2]</span></summary>
+    <div style="margin-top:.8rem">
+      <p><strong>(a)</strong> Taylor 2. Ordnung um x₀ = 0. f = sin²x, f′ = sin(2x), f″ = 2cos(2x):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">f(0) = 0, f'(0) = 0, f''(0) = 2
+T₂f(x) = 0 + 0·x + (2/2!)x² = x²</pre>
+      <p><strong>(b)</strong> c₀ = Mittelwert über eine Periode (L = 2π). Mit sin²x = ½ − ½cos(2x) ist der Konstantanteil ½:</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">c₀ = (1/2π) ∫₀^(2π) sin²t dt = 1/2</pre>
+    </div>
+  </details>
+
+  <!-- TASK 3 -->
+  <details class="card" style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Task 3 · f(x) = 2e^(−2x), x ≥ 0: Faltung + Fourier-Transform <span class="hint">[U2]</span></summary>
+    <div style="margin-top:.8rem">
+      <p><strong>(a)</strong> Faltung. Für t ≥ 0 (für t &lt; 0 ist es 0):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">(f∗f)(t) = ∫₀ᵗ 2e^(−2x) · 2e^(−2(t−x)) dx
+= 4e^(−2t) ∫₀ᵗ dx = 4t·e^(−2t)</pre>
+      <p><strong>(b)</strong> Fourier-Transform (Kurs-Konvention f̃(ω) = (1/√(2π)) ∫ f(t)e^(−iωt) dt):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">f̃(ω) = (1/√(2π)) ∫₀^∞ 2e^(−2t) e^(−iωt) dt
+= (2/√(2π)) ∫₀^∞ e^(−(2+iω)t) dt
+= (2/√(2π)) · 1/(2+iω) = √(2/π) / (2+iω)</pre>
+    </div>
+  </details>
+
+  <!-- TASK 4 -->
+  <details class="card" style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Task 4 · φ = sin(x + y² − z): Gradient, div-grad, curl-grad <span class="hint">[U4]</span></summary>
+    <div style="margin-top:.8rem">
+      <p>Setze w = x + y² − z (dann ∂w/∂x=1, ∂w/∂y=2y, ∂w/∂z=−1).</p>
+      <p><strong>(a)</strong> ∇φ = cos(w)·(1, 2y, −1)</p>
+      <p><strong>(b)</strong> div grad φ = Δφ (Laplace-Operator):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">∂²φ/∂x² = −sin w
+∂²φ/∂y² = 2cos w − 4y² sin w
+∂²φ/∂z² = −sin w
+Δφ = 2cos w − (4y² + 2) sin w</pre>
+      <p><strong>(c)</strong> curl(grad φ) = 0⃗ — <u>immer</u> für glatte φ (gemischte partielle Ableitungen kommutieren; konservativ ⟹ wirbelfrei).</p>
+    </div>
+  </details>
+
+  <!-- TASK 5 -->
+  <details class="card" style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Task 5 · u⃗=(3,0,−1), v⃗=(0,2,1): Projektion + Parallelogrammfläche <span class="hint">[U3]</span></summary>
+    <div style="margin-top:.8rem">
+      <p><strong>(a)</strong> proj_v(u) = (u·v / |v|²)·v. u·v = −1, |v|² = 5:</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">proj_v(u) = (−1/5)(0, 2, 1) = (0, −2/5, −1/5)</pre>
+      <p><strong>(b)</strong> Fläche = |u×v|. u×v = (2, −3, 6):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">|u×v| = √(4 + 9 + 36) = √49 = 7</pre>
+    </div>
+  </details>
+
+  <!-- TASK 6 -->
+  <details class="card" style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Task 6 · A = [[−1,0,0],[0,2,−1],[0,−1,2]]: Unabhängigkeit, Inverse, Eigenwerte, Diagonalisierung <span class="hint">[U5]</span></summary>
+    <div style="margin-top:.8rem">
+      <p><strong>(a)</strong> Spalten linear unabhängig ⟺ det A ≠ 0:</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">det A = −1 · det[[2,−1],[−1,2]] = −1·(4−1) = −3 ≠ 0  ✓</pre>
+      <p><strong>(b)</strong> Inverse (Blockstruktur: 1×1 Block −1 und 2×2 Block B, B⁻¹ = ⅓[[2,1],[1,2]]):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">A⁻¹ = [[−1, 0, 0],
+        [0, 2/3, 1/3],
+        [0, 1/3, 2/3]]</pre>
+      <p><strong>(c)</strong> Eigenwerte aus p_A(λ) = det(A−λI) = (−1−λ)((2−λ)²−1):</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">λ₁ = −1 → (A+I)x = 0  ⟹  x = (1, 0, 0)ᵀ
+λ₂ = 1  → (A−I)x = 0  ⟹  x = (0, 1, 1)ᵀ
+λ₃ = 3  → (A−3I)x= 0  ⟹  x = (0, 1, −1)ᵀ</pre>
+      <p><strong>(d)</strong> Spalten von S = Eigenvektoren, D = Diagonalmatrix der Eigenwerte:</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">S = [[1, 0, 0],
+     [0, 1, 1],
+     [0, 1, −1]],  D = diag(−1, 1, 3),  S⁻¹AS = D</pre>
+    </div>
+  </details>
+
+  <!-- TASK 7 -->
+  <details class="card" style="margin-top:1rem">
+    <summary style="cursor:pointer;font-weight:600">Task 7 · Krebs-Detektion: Cross-Entropy <span class="hint">[U6]</span></summary>
+    <div style="margin-top:.8rem">
+      <p>Wahre Verteilung p = (0, 1, 0) (benign, One-Hot), Modell q = (0.09, 0.73, 0.18).</p>
+      <pre style="background:var(--panel2);padding:.7rem;border-radius:8px;overflow-x:auto">H(p,q) = −Σᵢ pᵢ·log₂(qᵢ) = −1·log₂(0.73) ≈ 0.454 bits</pre>
+      <p class="hint">Interpretation: „Strafe" für die Unsicherheit des Modells — exakt der Cross-Entropy-Loss, mit dem Klassifikatoren/LLMs trainiert werden.</p>
+    </div>
+  </details>
+</section>
 </main>
 
 <script>
 // ================= Daten =================
 const LS = {m:'aihub_modules', c:'aihub_cards', n:'aihub_notes'};
 const DEFAULT_MODULES = [
-  {id:'m1', name:'Advanced Mathematics', code:'DLMDSAM-01', sem:1, credits:5, status:'open'},
-  {id:'m2', name:'Advanced Statistics', code:'DLMDSAS', sem:1, credits:5, status:'open'},
-  {id:'m3', name:'Machine Learning', code:'DLMDSML', sem:1, credits:5, status:'open'},
-  {id:'m4', name:'Project: AI Use Case', code:'DLMAIPAIUC', sem:1, credits:5, status:'open'},
-  {id:'m5', name:'Deep Learning', code:'DLMDSDL', sem:2, credits:5, status:'open'},
-  {id:'m6', name:'Continual Learning with Neural Networks', code:'DLMAICLNN', sem:2, credits:5, status:'open'},
-  {id:'m7', name:'Elective A (Auswahl offen – Tipp: Reinforcement Learning)', code:'TBD', sem:2, credits:5, status:'open'},
-  {id:'m8', name:'Data Engineering', code:'DLMDSEDE1', sem:3, credits:5, status:'open'},
-  {id:'m9', name:'Start Up Lab', code:'DLMIEESUL', sem:3, credits:5, status:'open'},
-  {id:'m10', name:'Case Study: Model Engineering', code:'DLMDSME', sem:3, credits:5, status:'open'},
-  {id:'m11', name:'NLP and LLM', code:'DLMMLNL01', sem:2, credits:5, status:'passed'},
-  {id:'m12', name:'Inference and Causality', code:'DLMAIIAC-01', sem:2, credits:5, status:'passed'},
-  {id:'m13', name:'Masterthesis (Platzhalter)', code:'—', sem:4, credits:30, status:'open'},
+  // === AKTIVE PRIORITÄTEN (1. SEMESTER) ===
+  {id:'act-1', name:'Advanced Mathematics', code:'DLMDSAM-01', sem:1, credits:5, status:'open', priority:1},
+  {id:'act-2', name:'Start Up Lab', code:'DLMIEESUL', sem:1, credits:5, status:'open', priority:2},
+  {id:'act-3', name:'Data Engineering', code:'DLMDSEDE1', sem:1, credits:5, status:'open', priority:3},
+  
+  // === SCHON BESTANDEN (nur zur Vollständigkeit im Hub) ===
+  {id:'done-1', name:'Artificial Intelligence', code:'DLMAIAI01', sem:1, credits:5, status:'passed'},
+  {id:'done-2', name:'Programming with Python', code:'DLMDSPWP01', sem:1, credits:5, status:'passed'},
+  {id:'done-3', name:'Advanced Research Methods', code:'DLMARM01-01', sem:2, credits:5, status:'passed'},
+  {id:'done-4', name:'Seminar: AI and Society', code:'DLMAISAIS01', sem:2, credits:5, status:'passed'},
+  {id:'done-5', name:'NLP and LLM', code:'DLMMLNL01', sem:2, credits:5, status:'passed'},
+  {id:'done-6', name:'Corporate Governance', code:'DLMIGCR01-01_E', sem:2, credits:5, status:'passed'},
+  {id:'done-7', name:'Use Case and Evaluation', code:'DLMDSUCE01', sem:2, credits:5, status:'passed'},
+  
+  // === ZUKUNFT (noch nicht fällig) ===
+  {id:'future-1', name:'Machine Learning', code:'DLMDSML', sem:2, credits:5, status:'open'},
+  {id:'future-2', name:'Deep Learning', code:'DLMDSDL', sem:2, credits:5, status:'open'},
+  {id:'future-3', name:'Seminar: Current Topics in AI', code:'DLMAISCTAI01', sem:2, credits:5, status:'open'},
+  {id:'future-4', name:'Master Thesis', code:'MMTHE01', sem:4, credits:27, status:'open'},
+  {id:'future-5', name:'Colloquium', code:'MMTHE02', sem:4, credits:3, status:'open'}
 ];
 const SEED_CARDS = [
   {id:'s1', deck:'Machine Learning', front:'What is overfitting?', back:'Overfitting: Das Modell lernt das Rauschen der Trainingsdaten auswendig statt der zugrundeliegenden Struktur → schlechte Generalisierung auf neuen Daten.', box:1},
